@@ -70,7 +70,7 @@ class ServidorSequencial():
 
             metodo_requisicao, caminho_requisicao, cabecalhos = self.dividir_requisicao(requisicao) 
             
-            id_cliente = gerar_hash()
+            id_cliente = cabecalhos.get('id_cliente', '')
                 
             self.contador_requisicoes+=1
             
