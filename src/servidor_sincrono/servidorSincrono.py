@@ -3,6 +3,7 @@ import socket
 import time
 import datetime
 import json
+from http import HTTPStatus
 
 PORT = 80
 HOST = '0.0.0.0'
@@ -13,7 +14,7 @@ def gerar_hash():
         print(sha1_hash)
         return sha1_hash
 
-class servidor():
+class ServidorSequencial():
     def __init__(self, host = HOST, porta = PORT):
         self.host = host
         self.porta = porta
@@ -74,11 +75,20 @@ class servidor():
             self.contador_requisicoes+=1
             
             resposta = self.construir_resposta(metodo_requisicao, caminho_requisicao, id_cliente, tempo_inicial)
+            
+            cliente.send(resposta.encode('utf-8'))
+            
+            tempo_final = time.time() - tempo_inicial
+            
+            print(f'Tempo total {tempo_final}')
         except:
-            pass
+            resposta = self.mensagem_erro(500)
+            corpo = json.dumps(resposta, indent=2)
+            return self.montar_mensagem_http(corpo, 500, id_cliente) 
+            
             
     def construir_resposta(self, metodo_requisicao, caminho_requisicao, id_cliente, tempo_inicial):
-        
+        status_code = 200
         resposta, delay = self.montar_resposta_base(metodo_requisicao, caminho_requisicao, id_cliente)
         conteudo = ''
         caminhos_validos = ['/rapido', '/medio', '/lento']
@@ -87,6 +97,7 @@ class servidor():
             if caminho_requisicao == '/':
                 conteudo = f'Bem vindo ao servidor sequencial!'
                 observacao = f'Metodo GET realizado na raiz'
+                
 
             elif caminho_requisicao in caminhos_validos:
                 conteudo = f'Rota {caminho_requisicao}'
@@ -99,35 +110,31 @@ class servidor():
                             }
                 observacao = f'Status consultado'
             else:
-                #return self.gerar_resposta_erro(404, "Rota desconhecida", identificador)
-                pass
+                status_code = 404
+                conteudo = f'Caminho nao encontrado'
+                observacao = f'Erro'
         elif metodo_requisicao == 'POST':
             if caminho_requisicao == '/dados':
                 conteudo = f'Dados recebidos com sucesso!'
                 observacao = f'POST executado.'
             else:
-                #return self.gerar_resposta_erro(404, "Rota desconhecida", identificador)
-                pass
+                status_code = 404
+                conteudo = f'Caminho nao encontrado'
+                observacao = f'Erro'
         else:
-            #return self.gerar_resposta_erro(404, "Rota desconhecida", identificador)
-                pass
+            status_code = 404
+            conteudo = f'Caminho nao encontrado'
+            observacao = f'Erro'
             
+        
         resposta.update({
             'Mensagem': observacao,
             'Conteudo': conteudo
         })
         
         corpo = json.dumps(resposta, indent=2)
-
-        resposta_http = (
-            'HTTP/1.1 200 OK\r\n'
-            'Content-Type: application/json\r\n'
-            f'Content-Length: {len(corpo)}'
-            'Server: Servidor Sequencial/2.0\r\n'
-            f'ID-Recebido: {id_cliente}\r\n'
-            'Connection: close\r\n\r\n'
-            f'{corpo}'
-        )
+        resposta_http = self.montar_mensagem_http(corpo, status_code, id_cliente)
+        
         
         return resposta_http
 
@@ -148,10 +155,38 @@ class servidor():
 
         return resposta, delay
     
-    def gerar_mensagem_erro(self):
-        pass
+    def mensagem_erro(self, status_code):
+        corpo_erro ={
+            'erro': status_code,
+            'mensagem': HTTPStatus(status_code).phrase,
+            'timestamp':datetime.datetime.now().isoformat()
+        }
+        return corpo_erro
+    
+        
 
+    def montar_mensagem_http(self, status_code, corpo, id_cliente):
+        mensagem_requisicao = HTTPStatus(status_code).phrase
+        resposta_http = (
+            f'HTTP/1.1 {status_code} {mensagem_requisicao}\r\n'
+            'Content-Type: application/json\r\n'
+            f'Content-Length: {len(corpo)}'
+            'Server: Servidor Sequencial/2.0\r\n'
+            f'ID-Recebido: {id_cliente}\r\n'
+            'Connection: close\r\n\r\n'
+            f'{corpo}'
+        )
+        
+        return resposta_http
+    
+    def parar(self):
+        #Para o servidor
+        if self.socket_servidor:
+            self.socket_servidor.close()
+            print("Servidor sequencial parado")
 
-
+if __name__ == "__main__":
+    servidor = ServidorSequencial()
+    servidor.iniciar()
 
 
