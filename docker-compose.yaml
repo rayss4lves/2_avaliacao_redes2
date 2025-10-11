@@ -1,7 +1,10 @@
+version: '3.8'
 services:
   servidor-sincrono:
-    build: ./servidor_sincrono
-    container_name: servidor-sincrono
+    build: 
+      context: ./src/servidor_sincrono
+      dockerfile: dockerfile.sincrono
+    container_name: servidor_sincrono
     networks:
       redes:
         ipv4_address: 95.58.0.2
@@ -9,16 +12,20 @@ services:
       - "8080:80"
 
   server-async:
-    build: ./servidor_assincrono
+    build:
+      context: ./src/servidor_assincrono
+      dockerfile: dockerfile.assincrono
     container_name: servidor-assincrono
     networks:
       redes:
         ipv4_address: 95.58.0.3
     ports:
-      - "8000:80"
+      - "8081:80"
 
   client:
-    build: ./cliente
+    build: 
+      context: ./src/cliente
+      dockerfile: dockerfile.cliente
     container_name: cliente
     depends_on:
       - servidor_sincrono
