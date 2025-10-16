@@ -10,12 +10,6 @@ PORT = 80
 HOST = '0.0.0.0'
 MAX_CONECTIONS = 5
 
-def gerar_hash():
-        chave = '20239019558 Rayssa Alves'
-        sha1_hash = hashlib.sha1(chave.encode()).hexdigest()
-        print(sha1_hash)
-        return sha1_hash
-
 class ServidorConcorrente():
     def __init__(self, host = HOST, porta = PORT):
         self.host = host

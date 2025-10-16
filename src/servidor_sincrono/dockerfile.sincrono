@@ -12,4 +12,4 @@ COPY src/servidor_sincrono/servidorSincrono.py ./src/
 EXPOSE 80
 
 # Comando para iniciar a aplicação cliente
-CMD ["python3", "servidorSincrono.py"]
+CMD ["python3", "/app/src/servidorSincrono.py"]
