@@ -11,7 +11,7 @@ services:
     ports:
       - "8080:80"
 
-  server-async:
+  servidor-assincrono:
     build:
       context: ./src/servidor_assincrono
       dockerfile: dockerfile.assincrono
@@ -28,7 +28,7 @@ services:
       dockerfile: dockerfile.cliente
     container_name: cliente
     depends_on:
-      - servidor_sincrono
+      - servidor-sincrono
       - servidor-assincrono
     networks:
       redes:
