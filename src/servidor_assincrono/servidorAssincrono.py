@@ -6,7 +6,7 @@ import json
 from http import HTTPStatus
 import threading
 
-PORT = 80
+PORT = 8080
 HOST = '0.0.0.0'
 MAX_CONECTIONS = 5
 
@@ -89,17 +89,19 @@ class ServidorConcorrente():
                 self.contador_requisicoes+=1
                 requisicao_atual = self.contador_requisicoes
             
-            resposta = self.construir_resposta(metodo_requisicao, caminho_requisicao, id_cliente, tempo_inicial, requisicao_atual, id_conexao)
+            resposta = self.construir_resposta(metodo_requisicao, caminho_requisicao, id_cliente, tempo_inicial)
             
-            cliente.send(resposta.encode('utf-8'))
+            cliente.sendall(resposta.encode('utf-8'))
             
             tempo_final = time.time() - tempo_inicial
             
             print(f'Requisicao {requisicao_atual} (conexao {id_conexao}) Tempo total {tempo_final}')
         except:
-            resposta = self.mensagem_erro(500, id_conexao)
-            corpo = json.dumps(resposta, indent=2)
-            return self.montar_mensagem_http(corpo, 500, id_cliente) 
+            resposta_erro = self.mensagem_erro(500, id_conexao)
+            corpo = json.dumps(resposta_erro, indent=2)
+            resposta = self.montar_mensagem_http(500, corpo, id_cliente)
+            cliente.sendall(resposta.encode('utf-8'))
+            return self.montar_mensagem_http(500, corpo, id_cliente) 
             
             
     def construir_resposta(self, metodo_requisicao, caminho_requisicao, id_cliente, tempo_inicial):
@@ -108,7 +110,7 @@ class ServidorConcorrente():
         conteudo = ''
         caminhos_validos = ['/rapido', '/medio', '/lento']
         
-        if metodo_requisicao == 'Get':
+        if metodo_requisicao == 'GET':
             if caminho_requisicao == '/':
                 conteudo = f'Bem vindo ao servidor sequencial!'
                 observacao = f'Metodo GET realizado na raiz'
@@ -164,7 +166,7 @@ class ServidorConcorrente():
             'Caminho': caminho_requisicao,
             'Numero da Requisicao': requisicao_atual,
             'Id_conexao': id_conexao,
-            'Data-Hora': datetime.now().strftime('%d/%m/%m/%Y %H:%M:%S'),
+            'Data-Hora': datetime.datetime.now().strftime('%d/%m/%m/%Y %H:%M:%S'),
             'ID_Recebido': id_cliente,
             'id_thread': threading.current_thread().ident,
             'Duracao': round(time.time() - tempo_inicial, 4)
@@ -203,12 +205,12 @@ class ServidorConcorrente():
     
     def parar(self):
         #Para o servidor
-        if self.socket_servidor:
-            self.socket_servidor.close()
+        if self.servidor_socket:
+            self.servidor_socket.close()
             print("Servidor sequencial parado")
 
 if __name__ == "__main__":
     servidor = ServidorConcorrente()
-    servidor.iniciar()
+    servidor.iniciar_servidor()
 
 

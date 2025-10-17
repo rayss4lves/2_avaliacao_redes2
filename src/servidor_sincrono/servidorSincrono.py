@@ -5,14 +5,14 @@ import datetime
 import json
 from http import HTTPStatus
 
-PORT = 80
+PORT = 8080
 HOST = '0.0.0.0'
 
 def gerar_hash():
-        chave = '20239019558 Rayssa Alves'
-        sha1_hash = hashlib.sha1(chave.encode()).hexdigest()
-        print(sha1_hash)
-        return sha1_hash
+    chave = '20239019558 Rayssa Alves'
+    sha1_hash = hashlib.sha1(chave.encode()).hexdigest()
+    print(sha1_hash)
+    return sha1_hash
 
 class ServidorSequencial():
     def __init__(self, host = HOST, porta = PORT):
@@ -26,8 +26,8 @@ class ServidorSequencial():
         self.servidor_socket.setsockopt(socket.SOL_SOCKET, socket.SO_REUSEADDR, 1)
         
         try:
-            self.servidor_socket.bind((self.host, self.porta))
-            self.servidor_socket.listen(1)
+            self.servidor_socket.bind((HOST, PORT))
+            self.servidor_socket.listen(5)
             print(f'Servidor iniciado em {self.host}:{self.porta}')
             while True:
                 cliente, endereco = self.servidor_socket.accept()
@@ -54,7 +54,7 @@ class ServidorSequencial():
                 for linha in linhas_requisicao[1:]:
                     if ':' in linha:
                         chave, valor = linha.split(':', 1)
-                        cabecalhos[chave] = valor
+                        cabecalhos[chave.strip()] = valor.strip()
             
             
         except Exception as e:
@@ -76,15 +76,20 @@ class ServidorSequencial():
             
             resposta = self.construir_resposta(metodo_requisicao, caminho_requisicao, id_cliente, tempo_inicial)
             
-            cliente.send(resposta.encode('utf-8'))
+            cliente.sendall(resposta.encode('utf-8'))
             
             tempo_final = time.time() - tempo_inicial
             
-            print(f'Tempo total {tempo_final}')
+            print(f"Tempo total {tempo_final}")
         except:
-            resposta = self.mensagem_erro(500)
-            corpo = json.dumps(resposta, indent=2)
-            return self.montar_mensagem_http(corpo, 500, id_cliente) 
+            resposta_erro = self.mensagem_erro(500)
+            corpo = json.dumps(resposta_erro, indent=2)
+            resposta = self.montar_mensagem_http(500, corpo, id_cliente)
+            cliente.sendall(resposta.encode('utf-8'))
+            #return self.montar_mensagem_http(500, corpo, id_cliente) 
+        finally:
+            cliente.close()
+            print(f'Conexão com {endereco} encerrada')
             
             
     def construir_resposta(self, metodo_requisicao, caminho_requisicao, id_cliente, tempo_inicial):
@@ -93,7 +98,7 @@ class ServidorSequencial():
         conteudo = ''
         caminhos_validos = ['/rapido', '/medio', '/lento']
         
-        if metodo_requisicao == 'Get':
+        if metodo_requisicao == 'GET':
             if caminho_requisicao == '/':
                 conteudo = f'Bem vindo ao servidor sequencial!'
                 observacao = f'Metodo GET realizado na raiz'
@@ -133,7 +138,7 @@ class ServidorSequencial():
         })
         
         corpo = json.dumps(resposta, indent=2)
-        resposta_http = self.montar_mensagem_http(corpo, status_code, id_cliente)
+        resposta_http = self.montar_mensagem_http(status_code, corpo, id_cliente)
         
         
         return resposta_http
@@ -148,7 +153,7 @@ class ServidorSequencial():
             'Servidor': 'Sequencial',
             'Metodo': metodo_requisicao, 
             'Caminho': caminho_requisicao,
-            'Data-Hora': datetime.now().strftime('%d/%m/%m/%Y %H:%M:%S'),
+            'Data-Hora': datetime.datetime.now().strftime('%d/%m/%m/%Y %H:%M:%S'),
             'ID_Recebido': id_cliente,
             'Duracao': round(time.time() - inicio, 4)
         }
@@ -170,7 +175,7 @@ class ServidorSequencial():
         resposta_http = (
             f'HTTP/1.1 {status_code} {mensagem_requisicao}\r\n'
             'Content-Type: application/json\r\n'
-            f'Content-Length: {len(corpo)}'
+            f'Content-Length: {len(corpo)}\r\n'
             'Server: Servidor Sequencial/2.0\r\n'
             f'ID-Recebido: {id_cliente}\r\n'
             'Connection: close\r\n\r\n'
@@ -181,12 +186,12 @@ class ServidorSequencial():
     
     def parar(self):
         #Para o servidor
-        if self.socket_servidor:
-            self.socket_servidor.close()
+        if self.servidor_socket:
+            self.servidor_socket.close()
             print("Servidor sequencial parado")
 
 if __name__ == "__main__":
     servidor = ServidorSequencial()
-    servidor.iniciar()
+    servidor.iniciar_servidor()
 
 

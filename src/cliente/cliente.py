@@ -51,8 +51,45 @@ class Cliente():
             print(f"Error: {e}")
             return False, 0, str(e)
         
+def aguardar_servidor(host, porta, max_tentativas=30, intervalo=1):
+    """Aguarda o servidor estar disponível antes de prosseguir"""
+    print(f"Aguardando servidor {host}:{porta} ficar disponível...")
+    
+    for tentativa in range(1, max_tentativas + 1):
+        try:
+            test_socket = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
+            test_socket.settimeout(2)
+            test_socket.connect((host, porta))
+            test_socket.close()
+            print(f"✓ Servidor {host}:{porta} está disponível!")
+            return True
+        except (socket.error, socket.timeout):
+            print(f"  Tentativa {tentativa}/{max_tentativas} - Aguardando...")
+            time.sleep(intervalo)
+    
+    print(f"✗ Não foi possível conectar ao servidor {host}:{porta}")
+    return False
+
 if __name__ == "__main__":
-    cliente = Cliente('localhost', 8080)
-    success, response_time, resposta = cliente.send_http_request(metodo='GET', caminho='/status')
-    print(f"Success: {success}, Response Time: {response_time}")
-    print(resposta)
+    # Aguarda os servidores ficarem disponíveis
+    servidor_host = 'servidor-sincrono'  # Ou 'servidor-assincrono'
+    servidor_porta = 8080
+    
+    servidor_host_s = 'servidor-assincrono'  # Ou 'servidor-assincrono'
+    servidor_porta_s = 8080
+    
+    if aguardar_servidor(servidor_host, servidor_porta):
+        cliente = Cliente(servidor_host, servidor_porta)
+        success, response_time, resposta = cliente.send_http_request(metodo='GET', caminho='/status')
+        print(f"\nSuccess: {success}, Response Time: {response_time}")
+        print(resposta)
+    else:
+        print("Falha ao conectar ao servidor")
+        
+    if aguardar_servidor(servidor_host_s, servidor_porta_s):
+        cliente = Cliente(servidor_host_s, servidor_porta_s)
+        success, response_time, resposta = cliente.send_http_request(metodo='GET', caminho='/status')
+        print(f"\nSuccess: {success}, Response Time: {response_time}")
+        print(resposta)
+    else:
+        print("Falha ao conectar ao servidor")

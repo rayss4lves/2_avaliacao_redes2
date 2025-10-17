@@ -1,4 +1,4 @@
-From ubuntu:latest
+FROM ubuntu:latest
 
 # Define o diretório de trabalho dentro do contêiner
 WORKDIR /app
@@ -7,9 +7,9 @@ WORKDIR /app
 RUN apt-get update && apt-get install iputils-ping net-tools python3 python3-pip -y
 
 # Copia o restante do código da aplicação
-COPY src/servidor_sincrono/servidorSincrono.py ./src/
+COPY servidorSincrono.py ./src/
 
-EXPOSE 80
+EXPOSE 8080
 
 # Comando para iniciar a aplicação cliente
 CMD ["python3", "/app/src/servidorSincrono.py"]
