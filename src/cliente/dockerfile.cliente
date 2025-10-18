@@ -1,4 +1,4 @@
-From ubuntu:latest
+FROM ubuntu:latest
 
 
 # Define o diretório de trabalho dentro do contêiner

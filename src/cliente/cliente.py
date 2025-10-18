@@ -10,6 +10,8 @@ def gerar_hash():
         return sha1_hash
 
 ID_CLIENTE = gerar_hash()
+MAX_THREADS = 10
+NUM_REQUISICOES = 5
  
 class Cliente():
     def __init__(self, host, porta):
@@ -69,6 +71,41 @@ def aguardar_servidor(host, porta, max_tentativas=30, intervalo=1):
     
     print(f"✗ Não foi possível conectar ao servidor {host}:{porta}")
     return False
+
+def teste_sequencial(host, porta, num_requisicoes=NUM_REQUISICOES, cliente = None):
+    print(f"Realizando {num_requisicoes} requisições sequenciais para {host}:{porta}")
+    
+    tempos = []
+    tempo_inicial = time.time()
+    for i in range(num_requisicoes):
+        ok, response_time, resposta = cliente.send_http_request(metodo='GET', caminho='/status')
+        if ok:
+            tempos.append(response_time)
+            print(f'\t[{i+1}]  \t {response_time*1000:.2f} ms')
+        else:
+            print(f'\t[{i+1}]  \t Falha na requisição: {resposta}')
+    
+    tempo_total = time.time()-tempo_inicial
+    media_tempos = sum(tempos)/num_requisicoes if tempos else 0
+    
+    print(f'Taxa de sucesso: {len(tempos)}/{num_requisicoes}')
+    print(f'Tempo total = {tempo_total:.2} s')
+    print(f'Tempo medio = {media_tempos*1000:.2} ms\n')
+    
+    return {'Tempo Total': tempo_total,
+            'Tempo Medio':media_tempos}
+  
+  
+# def teste_concorrente(host, porta, num_requisicoes=NUM_REQUISICOES, num_threads=MAX_THREADS, cliente = None):
+#     print(f"Realizando {num_requisicoes} requisições sequenciais para {host}:{porta}")
+    
+#     tempos = []
+#     tempo_inicial = time.time()
+    
+#     with ThreadPoolExecutor(max_conexoes=num_threads) as pool:
+#         futures = []
+        
+    
 
 if __name__ == "__main__":
     # Aguarda os servidores ficarem disponíveis

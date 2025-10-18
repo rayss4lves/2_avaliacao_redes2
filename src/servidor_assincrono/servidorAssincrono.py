@@ -8,7 +8,7 @@ import threading
 
 PORT = 8080
 HOST = '0.0.0.0'
-MAX_CONECTIONS = 5
+MAX_CONEXOES = 10
 
 class ServidorConcorrente():
     def __init__(self, host = HOST, porta = PORT):
@@ -25,7 +25,7 @@ class ServidorConcorrente():
         
         try:
             self.servidor_socket.bind((self.host, self.porta))
-            self.servidor_socket.listen(MAX_CONECTIONS)
+            self.servidor_socket.listen(MAX_CONEXOES)
             print(f'Servidor iniciado em {self.host}:{self.porta}')
             while True:
                 cliente, endereco = self.servidor_socket.accept()
@@ -42,13 +42,14 @@ class ServidorConcorrente():
             self.conexoes_ativas += 1
             id_conexao = self.conexoes_ativas
             
-        print(f'Conexao {id_conexao}')
+        print(f'Conexao {id_conexao} estabelecida com {endereco}')
         
         try:
             self.tratar_cliente(cliente, endereco, id_conexao)
         finally:
             with self.lock:
                 self.conexoes_ativas-=1
+            cliente.close()
             print(f'conexao {id_conexao} finalizada')
     
     # Separa a primeira linha (ex: GET /status HTTP/1.1)
@@ -67,7 +68,7 @@ class ServidorConcorrente():
                 for linha in linhas_requisicao[1:]:
                     if ':' in linha:
                         chave, valor = linha.split(':', 1)
-                        cabecalhos[chave] = valor
+                        cabecalhos[chave.strip()] = valor.strip()
             
             
         except Exception as e:
@@ -89,7 +90,7 @@ class ServidorConcorrente():
                 self.contador_requisicoes+=1
                 requisicao_atual = self.contador_requisicoes
             
-            resposta = self.construir_resposta(metodo_requisicao, caminho_requisicao, id_cliente, tempo_inicial)
+            resposta = self.construir_resposta(metodo_requisicao, caminho_requisicao, id_cliente, tempo_inicial, requisicao_atual, id_conexao)
             
             cliente.sendall(resposta.encode('utf-8'))
             
@@ -99,20 +100,19 @@ class ServidorConcorrente():
         except:
             resposta_erro = self.mensagem_erro(500, id_conexao)
             corpo = json.dumps(resposta_erro, indent=2)
-            resposta = self.montar_mensagem_http(500, corpo, id_cliente)
+            resposta = self.montar_mensagem_http(500, corpo, id_cliente, id_conexao)
             cliente.sendall(resposta.encode('utf-8'))
-            return self.montar_mensagem_http(500, corpo, id_cliente) 
             
             
-    def construir_resposta(self, metodo_requisicao, caminho_requisicao, id_cliente, tempo_inicial):
+    def construir_resposta(self, metodo_requisicao, caminho_requisicao, id_cliente, tempo_inicial, requisicao_atual, id_conexao):
         status_code = 200
-        resposta, delay = self.montar_resposta_base(metodo_requisicao, caminho_requisicao, id_cliente, tempo_inicial)
+        resposta, delay = self.montar_resposta_base(metodo_requisicao, caminho_requisicao, id_cliente, tempo_inicial, requisicao_atual, id_conexao)
         conteudo = ''
         caminhos_validos = ['/rapido', '/medio', '/lento']
         
         if metodo_requisicao == 'GET':
             if caminho_requisicao == '/':
-                conteudo = f'Bem vindo ao servidor sequencial!'
+                conteudo = f'Bem vindo ao servidor Concorrente!'
                 observacao = f'Metodo GET realizado na raiz'
                 
 
@@ -122,7 +122,7 @@ class ServidorConcorrente():
             
             elif caminho_requisicao == '/status':
                 conteudo = {"Status":"Ativo",
-                            "Tipo":"Sequencial",
+                            "Tipo":"Concorrente",
                             "Quantidade de requisicoes": self.contador_requisicoes
                             }
                 observacao = f'Status consultado'
@@ -150,7 +150,7 @@ class ServidorConcorrente():
         })
         
         corpo = json.dumps(resposta, indent=2)
-        resposta_http = self.montar_mensagem_http(corpo, status_code, id_cliente)
+        resposta_http = self.montar_mensagem_http(status_code, corpo, id_cliente, id_conexao)
         
         
         return resposta_http
@@ -168,7 +168,7 @@ class ServidorConcorrente():
             'Id_conexao': id_conexao,
             'Data-Hora': datetime.datetime.now().strftime('%d/%m/%m/%Y %H:%M:%S'),
             'ID_Recebido': id_cliente,
-            'id_thread': threading.current_thread().ident,
+            'ID_thread': threading.current_thread().ident,
             'Duracao': round(time.time() - tempo_inicial, 4)
         }
 
@@ -181,7 +181,7 @@ class ServidorConcorrente():
             'timestamp':datetime.datetime.now().isoformat(),
             'tipo_servidor': 'concorrente',
             'id_conexao': id_conexao,
-            'id_thread': {threading.current_thread().ident}
+            'id_thread': threading.current_thread().ident
         }
         return corpo_erro
     
@@ -193,10 +193,10 @@ class ServidorConcorrente():
             f'HTTP/1.1 {status_code} {mensagem_requisicao}\r\n'
             'Content-Type: application/json\r\n'
             f'Content-Length: {len(corpo.encode("utf-8"))}\r\n'
-            'Server: Servidor Sequencial\r\n'
+            'Server: Servidor Concorrente\r\n'
             f'ID-Recebido: {id_cliente}\r\n'
-            f'id_thread: {threading.current_thread().ident}\r\n'
-            f'id_cliente: {id_cliente}\r\n'
+            f'ID-Thread: {threading.current_thread().ident}\r\n'
+            f'ID-Conexao: {id_conexao}\r\n'
             'Connection: close\r\n\r\n'
             f'{corpo}'
             )
@@ -207,7 +207,7 @@ class ServidorConcorrente():
         #Para o servidor
         if self.servidor_socket:
             self.servidor_socket.close()
-            print("Servidor sequencial parado")
+            print("Servidor Concorrente parado")
 
 if __name__ == "__main__":
     servidor = ServidorConcorrente()
