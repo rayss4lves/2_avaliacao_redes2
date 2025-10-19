@@ -84,7 +84,7 @@ class ServidorConcorrente():
 
             metodo_requisicao, caminho_requisicao, cabecalhos = self.dividir_requisicao(requisicao) 
             
-            id_cliente = cabecalhos.get('id_cliente', '')
+            id_cliente = cabecalhos.get('X-Custom-ID', '')
             
             with self.lock:  
                 self.contador_requisicoes+=1
@@ -108,7 +108,6 @@ class ServidorConcorrente():
         status_code = 200
         resposta = self.montar_resposta_base(metodo_requisicao, caminho_requisicao, id_cliente, tempo_inicial, requisicao_atual, id_conexao)
         conteudo = ''
-        caminhos_validos = ['/rapido', '/lento']
         
         if metodo_requisicao == 'GET':
             if caminho_requisicao == '/':
@@ -152,7 +151,7 @@ class ServidorConcorrente():
             'Numero da Requisicao': requisicao_atual,
             'Id_conexao': id_conexao,
             'Data-Hora': datetime.datetime.now().strftime('%d/%m/%m/%Y %H:%M:%S'),
-            'ID_Recebido': id_cliente,
+            'X-Custom-ID': id_cliente,
             'ID_thread': threading.current_thread().ident,
             'Duracao': round(time.time() - tempo_inicial, 4)
         }

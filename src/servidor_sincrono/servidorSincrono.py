@@ -70,7 +70,7 @@ class ServidorSequencial():
 
             metodo_requisicao, caminho_requisicao, cabecalhos = self.dividir_requisicao(requisicao) 
             
-            id_cliente = cabecalhos.get('id_cliente', '')
+            id_cliente = cabecalhos.get('X-Custom-ID', '')
                 
             self.contador_requisicoes+=1
             
@@ -138,7 +138,7 @@ class ServidorSequencial():
             'Metodo': metodo_requisicao, 
             'Caminho': caminho_requisicao,
             'Data-Hora': datetime.datetime.now().strftime('%d/%m/%m/%Y %H:%M:%S'),
-            'ID_Recebido': id_cliente,
+            'X-Custom-ID': id_cliente,
             'Duracao': round(time.time() - inicio, 4)
         }
 
@@ -153,7 +153,6 @@ class ServidorSequencial():
         return corpo_erro
     
         
-
     def montar_mensagem_http(self, status_code, corpo, id_cliente):
         mensagem_requisicao = HTTPStatus(status_code).phrase
         resposta_http = (
