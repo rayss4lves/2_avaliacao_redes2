@@ -50,7 +50,7 @@ class ServidorConcorrente():
             with self.lock:
                 self.conexoes_ativas-=1
             cliente.close()
-            print(f'conexao {id_conexao} finalizada')
+            print(f'conexao {id_conexao} finalizada | Ativas :{self.conexoes_ativas}')
     
     # Separa a primeira linha (ex: GET /status HTTP/1.1)
     def dividir_requisicao(self, requisicao):
@@ -108,7 +108,7 @@ class ServidorConcorrente():
         status_code = 200
         resposta, delay = self.montar_resposta_base(metodo_requisicao, caminho_requisicao, id_cliente, tempo_inicial, requisicao_atual, id_conexao)
         conteudo = ''
-        caminhos_validos = ['/rapido', '/medio', '/lento']
+        caminhos_validos = ['/rapido', '/lento']
         
         if metodo_requisicao == 'GET':
             if caminho_requisicao == '/':

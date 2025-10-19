@@ -96,7 +96,7 @@ class ServidorSequencial():
         status_code = 200
         resposta, delay = self.montar_resposta_base(metodo_requisicao, caminho_requisicao, id_cliente)
         conteudo = ''
-        caminhos_validos = ['/rapido', '/medio', '/lento']
+        caminhos_validos = ['/rapido', '/lento']
         
         if metodo_requisicao == 'GET':
             if caminho_requisicao == '/':
