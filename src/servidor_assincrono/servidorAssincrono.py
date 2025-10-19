@@ -42,7 +42,7 @@ class ServidorConcorrente():
             self.conexoes_ativas += 1
             id_conexao = self.conexoes_ativas
             
-        print(f'Conexao {id_conexao} estabelecida com {endereco}')
+        # print(f'Conexao {id_conexao} estabelecida com {endereco}')
         
         try:
             self.tratar_cliente(cliente, endereco, id_conexao)
@@ -50,7 +50,7 @@ class ServidorConcorrente():
             with self.lock:
                 self.conexoes_ativas-=1
             cliente.close()
-            print(f'conexao {id_conexao} finalizada | Ativas :{self.conexoes_ativas}')
+            # print(f'conexao {id_conexao} finalizada | Ativas :{self.conexoes_ativas}')
     
     # Separa a primeira linha (ex: GET /status HTTP/1.1)
     def dividir_requisicao(self, requisicao):
@@ -96,7 +96,7 @@ class ServidorConcorrente():
             
             tempo_final = time.time() - tempo_inicial
             
-            print(f'Requisicao {requisicao_atual} (conexao {id_conexao}) Tempo total {tempo_final}')
+            # print(f'Requisicao {requisicao_atual} (conexao {id_conexao}) Tempo total {tempo_final}')
         except:
             resposta_erro = self.mensagem_erro(500, id_conexao)
             corpo = json.dumps(resposta_erro, indent=2)
@@ -106,7 +106,7 @@ class ServidorConcorrente():
             
     def construir_resposta(self, metodo_requisicao, caminho_requisicao, id_cliente, tempo_inicial, requisicao_atual, id_conexao):
         status_code = 200
-        resposta, delay = self.montar_resposta_base(metodo_requisicao, caminho_requisicao, id_cliente, tempo_inicial, requisicao_atual, id_conexao)
+        resposta = self.montar_resposta_base(metodo_requisicao, caminho_requisicao, id_cliente, tempo_inicial, requisicao_atual, id_conexao)
         conteudo = ''
         caminhos_validos = ['/rapido', '/lento']
         
@@ -114,18 +114,6 @@ class ServidorConcorrente():
             if caminho_requisicao == '/':
                 conteudo = f'Bem vindo ao servidor Concorrente!'
                 observacao = f'Metodo GET realizado na raiz'
-                
-
-            elif caminho_requisicao in caminhos_validos:
-                conteudo = f'Rota {caminho_requisicao}'
-                observacao = f'Tempo de resposta {delay}'
-            
-            elif caminho_requisicao == '/status':
-                conteudo = {"Status":"Ativo",
-                            "Tipo":"Concorrente",
-                            "Quantidade de requisicoes": self.contador_requisicoes
-                            }
-                observacao = f'Status consultado'
             else:
                 status_code = 404
                 conteudo = f'Caminho nao encontrado'
@@ -156,9 +144,6 @@ class ServidorConcorrente():
         return resposta_http
 
     def montar_resposta_base(self, metodo_requisicao, caminho_requisicao, id_cliente, tempo_inicial, requisicao_atual, id_conexao):
-        delays = {'/medio':1, '/lento':2}
-        delay = delays.get(caminho_requisicao, 0)
-        time.sleep(delay)
 
         resposta = {
             'Servidor': 'Concorrente',
@@ -172,7 +157,7 @@ class ServidorConcorrente():
             'Duracao': round(time.time() - tempo_inicial, 4)
         }
 
-        return resposta, delay
+        return resposta
     
     def mensagem_erro(self, status_code, id_conexao):
         corpo_erro ={

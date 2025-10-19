@@ -11,7 +11,7 @@ def gerar_hash():
         return sha1_hash
 
 ID_CLIENTE = gerar_hash()
-MAX_THREADS = 10
+MAX_THREADS = 5
 NUM_REQUISICOES = 5
  
 class Cliente():
@@ -96,9 +96,9 @@ def teste_sequencial(metodo, caminho, num_requisicoes=NUM_REQUISICOES, cliente =
     throughput = sucesso/tempo_total if tempo_total > 0 else 0
     
     print(f'Taxa de sucesso: {len(tempos)}/{num_requisicoes}')
-    print(f'Tempo total = {tempo_total:.2} s')
-    print(f'Tempo medio = {media_tempos*1000:.2} ms\n')
-    print(f'Throughput = {throughput:.2} req/s\n')
+    print(f'Tempo total = {tempo_total:.2f} s')
+    print(f'Tempo medio = {media_tempos*1000:.2f} ms\n')
+    print(f'Throughput = {throughput:.2f} req/s\n')
     
     
     return {'Tempo Total': tempo_total,
@@ -146,9 +146,9 @@ def teste_concorrente(num_requisicoes=NUM_REQUISICOES, num_threads=MAX_THREADS, 
     throughput = sucesso/tempo_total if tempo_total > 0 else 0
     
     print(f'Taxa de sucesso: {len(tempos)}/{num_requisicoes}')
-    print(f'Tempo total = {tempo_total:.2} s')
-    print(f'Tempo medio = {media_tempos*1000:.2} ms\n')
-    print(f'Throughput = {throughput:.2} req/s\n')
+    print(f'Tempo total = {tempo_total:.2f} s')
+    print(f'Tempo medio = {media_tempos*1000:.2f} ms\n')
+    print(f'Throughput = {throughput:.2f} req/s\n')
     print(f'Falhas: {len(falhas)}\n')
     print(f'Total de requisições: {total_requisicoes}\n')
     
@@ -171,13 +171,10 @@ if __name__ == "__main__":
     servidor_host_assincrono = 'servidor-assincrono' 
     servidor_porta_assincrono = 8080
     
-    cenarios_teste = [{
+    cenarios_teste = [
         {'metodo':'GET', 'caminho':'/'},
-        {'metodo':'GET', 'caminho':'/rapido'},
-        {'metodo':'GET', 'caminho':'/lento'},
-        {'metodo':'GET', 'caminho':'/status'},
         {'metodo':'POST', 'caminho':'/dados'},
-    }]
+    ]
     
     resultados_sincrono = []
     resultados_assincrono = []
@@ -190,7 +187,7 @@ if __name__ == "__main__":
         print(f"\nSuccess: {success}, Response Time: {response_time}")
         print(resposta)
         for cenario in cenarios_teste:
-            resultado_sincrono = teste_sequencial(metodo=cenario['metodo'], caminho=['caminho'], cliente=cliente)
+            resultado_sincrono = teste_sequencial(metodo=cenario['metodo'], caminho=cenario['caminho'], cliente=cliente)
             resultados_sincrono.append(resultado_sincrono)
     else:
         print("Falha ao conectar ao servidor")
@@ -201,11 +198,11 @@ if __name__ == "__main__":
     if aguardar_servidor(servidor_host_assincrono, servidor_porta_assincrono):
         print('-----------Teste inicial-----------')
         cliente = Cliente(servidor_host_assincrono, servidor_porta_assincrono)
-        success, response_time, resposta = cliente.enviar_requisicao(metodo='GET', caminho='/status')
+        success, response_time, resposta = cliente.enviar_requisicao(metodo='GET', caminho='/')
         print(f"\nSuccess: {success}, Response Time: {response_time}")
         print(resposta)
         for cenario in cenarios_teste:
-            resultado_assincrono = teste_concorrente(metodo=cenario['metodo'], caminho=['caminho'], cliente=cliente)
+            resultado_assincrono = teste_concorrente(metodo=cenario['metodo'], caminho=cenario['caminho'], cliente=cliente)
             resultados_assincrono.append(resultado_assincrono)
     else:
         print("Falha ao conectar ao servidor")

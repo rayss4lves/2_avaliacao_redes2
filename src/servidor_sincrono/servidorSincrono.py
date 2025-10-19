@@ -80,13 +80,13 @@ class ServidorSequencial():
             
             tempo_final = time.time() - tempo_inicial
             
-            print(f"Tempo total {tempo_final}")
+            # print(f"Tempo total {tempo_final}")
         except:
             resposta_erro = self.mensagem_erro(500)
             corpo = json.dumps(resposta_erro, indent=2)
             resposta = self.montar_mensagem_http(500, corpo, id_cliente)
             cliente.sendall(resposta.encode('utf-8'))
-            #return self.montar_mensagem_http(500, corpo, id_cliente) 
+
         finally:
             cliente.close()
             print(f'Conexão com {endereco} encerrada')
@@ -94,26 +94,13 @@ class ServidorSequencial():
             
     def construir_resposta(self, metodo_requisicao, caminho_requisicao, id_cliente, tempo_inicial):
         status_code = 200
-        resposta, delay = self.montar_resposta_base(metodo_requisicao, caminho_requisicao, id_cliente)
+        resposta = self.montar_resposta_base(metodo_requisicao, caminho_requisicao, id_cliente)
         conteudo = ''
-        caminhos_validos = ['/rapido', '/lento']
         
         if metodo_requisicao == 'GET':
             if caminho_requisicao == '/':
                 conteudo = f'Bem vindo ao servidor sequencial!'
                 observacao = f'Metodo GET realizado na raiz'
-                
-
-            elif caminho_requisicao in caminhos_validos:
-                conteudo = f'Rota {caminho_requisicao}'
-                observacao = f'Tempo de resposta {delay}'
-            
-            elif caminho_requisicao == '/status':
-                conteudo = {"Status":"Ativo",
-                            "Tipo":"Sequencial",
-                            "Quantidade de requisicoes": self.contador_requisicoes
-                            }
-                observacao = f'Status consultado'
             else:
                 status_code = 404
                 conteudo = f'Caminho nao encontrado'
@@ -145,9 +132,6 @@ class ServidorSequencial():
 
     def montar_resposta_base(self, metodo_requisicao, caminho_requisicao, id_cliente):
         inicio = time.time()
-        delays = {'/medio':1, '/lento':2}
-        delay = delays.get(caminho_requisicao, 0)
-        time.sleep(delay)
 
         resposta = {
             'Servidor': 'Sequencial',
@@ -158,7 +142,7 @@ class ServidorSequencial():
             'Duracao': round(time.time() - inicio, 4)
         }
 
-        return resposta, delay
+        return resposta
     
     def mensagem_erro(self, status_code):
         corpo_erro ={
