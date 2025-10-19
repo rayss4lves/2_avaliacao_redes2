@@ -179,6 +179,9 @@ if __name__ == "__main__":
         {'metodo':'POST', 'caminho':'/dados'},
     }]
     
+    resultados_sincrono = []
+    resultados_assincrono = []
+    
     print('=======================TESTE DO SERVIDOR SINCRONO=======================')
     if aguardar_servidor(servidor_host_sincrono, servidor_porta_sincrono):
         print('-----------Teste inicial-----------')
@@ -188,10 +191,11 @@ if __name__ == "__main__":
         print(resposta)
         for cenario in cenarios_teste:
             resultado_sincrono = teste_sequencial(metodo=cenario['metodo'], caminho=['caminho'], cliente=cliente)
+            resultados_sincrono.append(resultado_sincrono)
     else:
         print("Falha ao conectar ao servidor")
     
-    print(resultado_sincrono[0])   
+    print(resultados_sincrono[0])   
         
     print('======================TESTE DO SERVIDOR ASSINCRONO======================')
     if aguardar_servidor(servidor_host_assincrono, servidor_porta_assincrono):
@@ -202,7 +206,8 @@ if __name__ == "__main__":
         print(resposta)
         for cenario in cenarios_teste:
             resultado_assincrono = teste_concorrente(metodo=cenario['metodo'], caminho=['caminho'], cliente=cliente)
+            resultados_assincrono.append(resultado_assincrono)
     else:
         print("Falha ao conectar ao servidor")
         
-    print(resultado_assincrono[0]) 
+    print(resultados_assincrono[0]) 
