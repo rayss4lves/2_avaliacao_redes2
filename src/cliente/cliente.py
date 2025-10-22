@@ -12,7 +12,7 @@ def gerar_hash():
         print(sha1_hash)
         return sha1_hash
 
-ID_CLIENTE = gerar_hash()
+X_CUSTOM_ID = gerar_hash()
 MAX_THREADS = 5
 NUM_REQUISICOES_SEQ = 5
 NUM_REQ_CONCORRENTE = 2
@@ -31,7 +31,7 @@ class Cliente():
             client_socket.settimeout(5)
             client_socket.connect((self.host, self.porta))
             
-            cabecalhos = [f"Host: {self.host}", f"X-Custom-ID: {ID_CLIENTE}", "Connection: close"]
+            cabecalhos = [f"Host: {self.host}", f"X-Custom-ID: {X_CUSTOM_ID}", "Connection: close"]
             corpo_texto = ""
             if corpo:
                 corpo_texto = str(corpo)
