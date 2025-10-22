@@ -1,21 +1,9 @@
-import sys
-import os
-
 import hashlib
 import socket
 import time
 import datetime
 import json
 from http import HTTPStatus
-# Em servidorSincrono.py
-
-
-
-
-# # Adicionar o caminho do src ao sys.path
-sys.path.insert(0, os.path.abspath(os.path.join(os.path.dirname(__file__), '..', '..')))
-
-from cliente.cliente import X_CUSTOM_ID
 
 PORT = 8080
 HOST = '0.0.0.0'
@@ -79,29 +67,26 @@ class ServidorSequencial():
         
         try:
             tempo_inicial = time.time()
-            requisicao = cliente.recv(4096)
+            requisicao = cliente.recv(1024)
 
             metodo_requisicao, caminho_requisicao, cabecalhos = self.dividir_requisicao(requisicao) 
             
             id_cliente = cabecalhos.get('X-Custom-ID', '')
             
-            if id_cliente != X_CUSTOM_ID:
+            if id_cliente != ID_ESPERADO:
                 resposta_erro = self.mensagem_erro(401, id_cliente)
                 corpo = json.dumps(resposta_erro, indent=2)
                 resposta = self.montar_mensagem_http(401, corpo, id_cliente)
                 cliente.sendall(resposta.encode('utf-8'))
-                
             else:
-                
                 self.contador_requisicoes+=1
-                
+            
                 resposta = self.construir_resposta(metodo_requisicao, caminho_requisicao, id_cliente, tempo_inicial)
                 
                 cliente.sendall(resposta.encode('utf-8'))
             
-            # print(f"Tempo total {tempo_final}")
         except:
-            resposta_erro = self.mensagem_erro(500, id_cliente)
+            resposta_erro = self.mensagem_erro(500)
             corpo = json.dumps(resposta_erro, indent=2)
             resposta = self.montar_mensagem_http(500, corpo, id_cliente)
             cliente.sendall(resposta.encode('utf-8'))
@@ -144,13 +129,13 @@ class ServidorSequencial():
         })
         
         corpo = json.dumps(resposta, indent=2)
-        resposta_http = self.montar_mensagem_http(status_code, corpo, id_cliente, tempo_inicial)
+        resposta_http = self.montar_mensagem_http(status_code, corpo, id_cliente)
         
         
         return resposta_http
 
-    def montar_resposta_base(self, metodo_requisicao, caminho_requisicao, id_cliente, inicio):
-
+    def montar_resposta_base(self, metodo_requisicao, caminho_requisicao, id_cliente, tempo_inicial):
+        
         resposta = {
             'Servidor': 'Sequencial',
             'Metodo': metodo_requisicao, 
@@ -162,12 +147,11 @@ class ServidorSequencial():
 
         return resposta
     
-    def mensagem_erro(self, status_code, id_cliente):
+    def mensagem_erro(self, status_code):
         corpo_erro ={
             'erro': status_code,
             'mensagem': HTTPStatus(status_code).phrase,
-            'timestamp':datetime.datetime.now().isoformat(),
-            'X-Custom-ID-Recebido': id_cliente
+            'timestamp':datetime.datetime.now().isoformat()
         }
         return corpo_erro
     

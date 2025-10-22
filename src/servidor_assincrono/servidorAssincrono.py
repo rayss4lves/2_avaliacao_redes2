@@ -1,30 +1,10 @@
-import sys
-import os
-
-import threading
+import hashlib
 import socket
 import time
 import datetime
 import json
 from http import HTTPStatus
-
-
-# Adicionar o caminho do src ao sys.path
-sys.path.insert(0, os.path.abspath(os.path.join(os.path.dirname(__file__), '..', '..')))
-
-
-print("=" * 50)
-print("📂 Current directory:", os.getcwd())
-print("📂 __file__:", __file__)
-print("📂 dirname(__file__):", os.path.dirname(__file__))
-print("📂 Caminho adicionado:", os.path.abspath(os.path.join(os.path.dirname(__file__), '..', '..')))
-print("📂 sys.path:", sys.path)
-print("📂 Conteúdo de /app:", os.listdir('/app') if os.path.exists('/app') else "Não existe")
-print("📂 Conteúdo de /app/src:", os.listdir('/app/src') if os.path.exists('/app/src') else "Não existe")
-print("=" * 50)
-
-
-from cliente.cliente import X_CUSTOM_ID
+import threading
 
 PORT = 8080
 HOST = '0.0.0.0'
@@ -107,7 +87,7 @@ class ServidorConcorrente():
         
         try:
             tempo_inicial = time.time()
-            requisicao = cliente.recv(4096)
+            requisicao = cliente.recv(1024)
 
             metodo_requisicao, caminho_requisicao, cabecalhos = self.dividir_requisicao(requisicao) 
             
@@ -117,18 +97,16 @@ class ServidorConcorrente():
                 self.contador_requisicoes+=1
                 requisicao_atual = self.contador_requisicoes
             
-            if id_cliente != ID_ESPERADO:
-                resposta_erro = self.mensagem_erro(401, id_cliente)
-                corpo = json.dumps(resposta_erro, indent=2)
-                resposta = self.montar_mensagem_http(401, corpo, id_cliente)
-                cliente.sendall(resposta.encode('utf-8')) 
-            else:
-                resposta = self.construir_resposta(metodo_requisicao, caminho_requisicao, id_cliente, tempo_inicial, requisicao_atual, id_conexao)
-                
-                cliente.sendall(resposta.encode('utf-8'))
             
+            resposta = self.construir_resposta(metodo_requisicao, caminho_requisicao, id_cliente, tempo_inicial, requisicao_atual, id_conexao)
+            
+            cliente.sendall(resposta.encode('utf-8'))
+            
+            tempo_final = time.time() - tempo_inicial
+            
+            # print(f'Requisicao {requisicao_atual} (conexao {id_conexao}) Tempo total {tempo_final}')
         except:
-            resposta_erro = self.mensagem_erro(500, id_conexao, id_cliente)
+            resposta_erro = self.mensagem_erro(500, id_conexao)
             corpo = json.dumps(resposta_erro, indent=2)
             resposta = self.montar_mensagem_http(500, corpo, id_cliente, id_conexao)
             cliente.sendall(resposta.encode('utf-8'))
@@ -188,18 +166,14 @@ class ServidorConcorrente():
 
         return resposta
     
-    def mensagem_erro(self, status_code, id_conexao, id_cliente):
-    def mensagem_erro(self, status_code, id_conexao, id_cliente):
+    def mensagem_erro(self, status_code, id_conexao):
         corpo_erro ={
             'erro': status_code,
             'mensagem': HTTPStatus(status_code).phrase,
             'timestamp':datetime.datetime.now().isoformat(),
             'tipo_servidor': 'concorrente',
             'id_conexao': id_conexao,
-            'id_thread': threading.current_thread().ident,
-            'X-Custom-ID': id_cliente
-            'id_thread': threading.current_thread().ident,
-            'X-Custom-ID': id_cliente
+            'id_thread': threading.current_thread().ident
         }
         return corpo_erro
     
