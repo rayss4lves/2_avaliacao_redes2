@@ -1,10 +1,30 @@
-import hashlib
+import sys
+import os
+
+import threading
 import socket
 import time
 import datetime
 import json
 from http import HTTPStatus
-import threading
+
+
+# Adicionar o caminho do src ao sys.path
+sys.path.insert(0, os.path.abspath(os.path.join(os.path.dirname(__file__), '..', '..')))
+
+
+print("=" * 50)
+print("📂 Current directory:", os.getcwd())
+print("📂 __file__:", __file__)
+print("📂 dirname(__file__):", os.path.dirname(__file__))
+print("📂 Caminho adicionado:", os.path.abspath(os.path.join(os.path.dirname(__file__), '..', '..')))
+print("📂 sys.path:", sys.path)
+print("📂 Conteúdo de /app:", os.listdir('/app') if os.path.exists('/app') else "Não existe")
+print("📂 Conteúdo de /app/src:", os.listdir('/app/src') if os.path.exists('/app/src') else "Não existe")
+print("=" * 50)
+
+
+from cliente.cliente import X_CUSTOM_ID
 
 PORT = 8080
 HOST = '0.0.0.0'
@@ -87,7 +107,7 @@ class ServidorConcorrente():
         
         try:
             tempo_inicial = time.time()
-            requisicao = cliente.recv(1024)
+            requisicao = cliente.recv(4096)
 
             metodo_requisicao, caminho_requisicao, cabecalhos = self.dividir_requisicao(requisicao) 
             
@@ -169,12 +189,15 @@ class ServidorConcorrente():
         return resposta
     
     def mensagem_erro(self, status_code, id_conexao, id_cliente):
+    def mensagem_erro(self, status_code, id_conexao, id_cliente):
         corpo_erro ={
             'erro': status_code,
             'mensagem': HTTPStatus(status_code).phrase,
             'timestamp':datetime.datetime.now().isoformat(),
             'tipo_servidor': 'concorrente',
             'id_conexao': id_conexao,
+            'id_thread': threading.current_thread().ident,
+            'X-Custom-ID': id_cliente
             'id_thread': threading.current_thread().ident,
             'X-Custom-ID': id_cliente
         }
