@@ -10,6 +10,13 @@ PORT = 8080
 HOST = '0.0.0.0'
 MAX_CONEXOES = 10
 
+def gerar_hash():
+    chave = '20239019558 Rayssa Alves'
+    sha1_hash = hashlib.sha1(chave.encode()).hexdigest()
+    return sha1_hash
+
+ID_ESPERADO = gerar_hash()
+
 class ServidorConcorrente():
     def __init__(self, host = HOST, porta = PORT):
         self.host = host
@@ -90,15 +97,18 @@ class ServidorConcorrente():
                 self.contador_requisicoes+=1
                 requisicao_atual = self.contador_requisicoes
             
-            resposta = self.construir_resposta(metodo_requisicao, caminho_requisicao, id_cliente, tempo_inicial, requisicao_atual, id_conexao)
+            if id_cliente != ID_ESPERADO:
+                resposta_erro = self.mensagem_erro(401, id_cliente)
+                corpo = json.dumps(resposta_erro, indent=2)
+                resposta = self.montar_mensagem_http(401, corpo, id_cliente)
+                cliente.sendall(resposta.encode('utf-8')) 
+            else:
+                resposta = self.construir_resposta(metodo_requisicao, caminho_requisicao, id_cliente, tempo_inicial, requisicao_atual, id_conexao)
+                
+                cliente.sendall(resposta.encode('utf-8'))
             
-            cliente.sendall(resposta.encode('utf-8'))
-            
-            tempo_final = time.time() - tempo_inicial
-            
-            # print(f'Requisicao {requisicao_atual} (conexao {id_conexao}) Tempo total {tempo_final}')
         except:
-            resposta_erro = self.mensagem_erro(500, id_conexao)
+            resposta_erro = self.mensagem_erro(500, id_conexao, id_cliente)
             corpo = json.dumps(resposta_erro, indent=2)
             resposta = self.montar_mensagem_http(500, corpo, id_cliente, id_conexao)
             cliente.sendall(resposta.encode('utf-8'))
@@ -158,14 +168,15 @@ class ServidorConcorrente():
 
         return resposta
     
-    def mensagem_erro(self, status_code, id_conexao):
+    def mensagem_erro(self, status_code, id_conexao, id_cliente):
         corpo_erro ={
             'erro': status_code,
             'mensagem': HTTPStatus(status_code).phrase,
             'timestamp':datetime.datetime.now().isoformat(),
             'tipo_servidor': 'concorrente',
             'id_conexao': id_conexao,
-            'id_thread': threading.current_thread().ident
+            'id_thread': threading.current_thread().ident,
+            'X-Custom-ID': id_cliente
         }
         return corpo_erro
     

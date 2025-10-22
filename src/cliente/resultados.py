@@ -60,3 +60,7 @@ def mostrar_resultados(estatisticas):
             media = valores['Media']
             desvio = valores['Desvio Padrao']
             print(f"  {metrica:.<40} Média: {media:>10.2f} | Desvio: {desvio:>10.2f}")
+
+
+import matplotlib.pyplot as plt
+

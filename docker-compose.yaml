@@ -30,6 +30,8 @@ services:
     depends_on:
       - servidor-sincrono
       - servidor-assincrono
+    volumes:
+      - ./src/cliente:/app
     networks:
       redes:
         ipv4_address: 95.58.0.4

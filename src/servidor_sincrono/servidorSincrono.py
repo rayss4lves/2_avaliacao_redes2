@@ -11,8 +11,9 @@ HOST = '0.0.0.0'
 def gerar_hash():
     chave = '20239019558 Rayssa Alves'
     sha1_hash = hashlib.sha1(chave.encode()).hexdigest()
-    print(sha1_hash)
     return sha1_hash
+
+ID_ESPERADO = gerar_hash()
 
 class ServidorSequencial():
     def __init__(self, host = HOST, porta = PORT):
@@ -71,16 +72,19 @@ class ServidorSequencial():
             metodo_requisicao, caminho_requisicao, cabecalhos = self.dividir_requisicao(requisicao) 
             
             id_cliente = cabecalhos.get('X-Custom-ID', '')
+            
+            if id_cliente != ID_ESPERADO:
+                resposta_erro = self.mensagem_erro(401, id_cliente)
+                corpo = json.dumps(resposta_erro, indent=2)
+                resposta = self.montar_mensagem_http(401, corpo, id_cliente)
+                cliente.sendall(resposta.encode('utf-8'))
+            else:
+                self.contador_requisicoes+=1
+            
+                resposta = self.construir_resposta(metodo_requisicao, caminho_requisicao, id_cliente, tempo_inicial)
                 
-            self.contador_requisicoes+=1
+                cliente.sendall(resposta.encode('utf-8'))
             
-            resposta = self.construir_resposta(metodo_requisicao, caminho_requisicao, id_cliente, tempo_inicial)
-            
-            cliente.sendall(resposta.encode('utf-8'))
-            
-            tempo_final = time.time() - tempo_inicial
-            
-            # print(f"Tempo total {tempo_final}")
         except:
             resposta_erro = self.mensagem_erro(500)
             corpo = json.dumps(resposta_erro, indent=2)
@@ -94,7 +98,7 @@ class ServidorSequencial():
             
     def construir_resposta(self, metodo_requisicao, caminho_requisicao, id_cliente, tempo_inicial):
         status_code = 200
-        resposta = self.montar_resposta_base(metodo_requisicao, caminho_requisicao, id_cliente)
+        resposta = self.montar_resposta_base(metodo_requisicao, caminho_requisicao, id_cliente, tempo_inicial)
         conteudo = ''
         
         if metodo_requisicao == 'GET':
@@ -130,16 +134,15 @@ class ServidorSequencial():
         
         return resposta_http
 
-    def montar_resposta_base(self, metodo_requisicao, caminho_requisicao, id_cliente):
-        inicio = time.time()
-
+    def montar_resposta_base(self, metodo_requisicao, caminho_requisicao, id_cliente, tempo_inicial):
+        
         resposta = {
             'Servidor': 'Sequencial',
             'Metodo': metodo_requisicao, 
             'Caminho': caminho_requisicao,
             'Data-Hora': datetime.datetime.now().strftime('%d/%m/%m/%Y %H:%M:%S'),
             'X-Custom-ID': id_cliente,
-            'Duracao': round(time.time() - inicio, 4)
+            'Duracao': round(time.time() - tempo_inicial, 4)
         }
 
         return resposta
@@ -176,5 +179,3 @@ class ServidorSequencial():
 if __name__ == "__main__":
     servidor = ServidorSequencial()
     servidor.iniciar_servidor()
-
-
