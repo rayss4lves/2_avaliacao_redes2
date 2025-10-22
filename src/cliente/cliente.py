@@ -3,6 +3,7 @@ import hashlib
 import time
 import threading
 from testes import teste_sequencial, teste_concorrente
+from resultados import calcular_estatisticas, mostrar_resultados
 
 
 def gerar_hash():
@@ -15,6 +16,7 @@ ID_CLIENTE = gerar_hash()
 MAX_THREADS = 5
 NUM_REQUISICOES_SEQ = 5
 NUM_REQ_CONCORRENTE = 2
+NUM_EXECUCOES = 2
  
 class Cliente():
     def __init__(self, host, porta):
@@ -56,25 +58,6 @@ class Cliente():
             print(f"Error: {e}")
             return False, 0, str(e)
         
-# def aguardar_servidor(host, porta, max_tentativas=30, intervalo=1):
-#     """Aguarda o servidor estar disponivel antes de prosseguir"""
-#     print(f"Aguardando servidor {host}:{porta} ficar disponivel...")
-    
-#     for tentativa in range(1, max_tentativas + 1):
-#         try:
-#             test_socket = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
-#             test_socket.settimeout(2)
-#             test_socket.connect((host, porta))
-#             test_socket.close()
-#             print(f"Servidor {host}:{porta} esta disponivel!")
-#             return True
-#         except (socket.error, socket.timeout):
-#             print(f"  Tentativa {tentativa}/{max_tentativas} - Aguardando...")
-#             time.sleep(intervalo)
-    
-#     print(f"Nao foi possivel conectar ao servidor {host}:{porta}")
-#     return False
-   
 
 if __name__ == "__main__":
     # Aguarda os servidores ficarem disponiveis
@@ -88,9 +71,11 @@ if __name__ == "__main__":
         {'metodo':'GET', 'caminho':'/'},
         {'metodo':'POST', 'caminho':'/dados'},
     ]
+    cenario1 = cenarios_teste[0]
+    chave1 = f"{cenario1['metodo']} - {cenario1['caminho']}"
     
-    resultados_sincrono = []
-    resultados_assincrono = []
+    resultados_sincrono = {}
+    resultados_assincrono = {}
     
     
     print('=======================TESTE DO SERVIDOR SINCRONO=======================')
@@ -101,13 +86,18 @@ if __name__ == "__main__":
     print(f"\nSuccess: {success}, Response Time: {response_time}")
     print(resposta)
     for cenario in cenarios_teste:
+        resultados = []
+        chave = f"{cenario['metodo']} - {cenario['caminho']}"
         print(f'------------------------------ Cenario {cenario["metodo"]} ------------------------------')
-        resultado_sincrono = teste_sequencial(metodo=cenario['metodo'], caminho=cenario['caminho'], cliente=cliente)
-        resultados_sincrono.append(resultado_sincrono)
+        for i in range(NUM_EXECUCOES):
+            print(f'------------------ Execucao {i+1} ------------------')
+            resultado_sincrono = teste_sequencial(metodo=cenario['metodo'], caminho=cenario['caminho'], cliente=cliente)
+            resultados.append(resultado_sincrono)
+        resultados_sincrono[chave] = resultados
     # else:
     #     print("Falha ao conectar ao servidor")
     
-    print(resultados_sincrono[0])   
+    print(resultados_sincrono[chave1][0])   
         
     print('======================TESTE DO SERVIDOR ASSINCRONO======================')
     #if aguardar_servidor(servidor_host_assincrono, servidor_porta_assincrono):
@@ -117,10 +107,31 @@ if __name__ == "__main__":
     print(f"\nSuccess: {success}, Response Time: {response_time}")
     print(resposta)
     for cenario in cenarios_teste:
+        resultados = []
+        chave = f"{cenario['metodo']} - {cenario['caminho']}"
         print(f'------------------------------ Cenario {cenario["metodo"]} ------------------------------')
-        resultado_assincrono = teste_concorrente(metodo=cenario['metodo'], caminho=cenario['caminho'], cliente=cliente)
-        resultados_assincrono.append(resultado_assincrono)
+        for i in range(NUM_EXECUCOES):
+            print(f'------------------ Execucao {i+1} ------------------')
+            resultado_assincrono = teste_concorrente(metodo=cenario['metodo'], caminho=cenario['caminho'], cliente=cliente)
+            resultados.append(resultado_assincrono)
+        resultados_assincrono[chave] = resultados
     # else:
     #     print("Falha ao conectar ao servidor")
-        
-    print(resultados_assincrono[0]) 
+    print(resultados_assincrono[chave1][0])
+    
+    
+    
+    print('======================ESTATISTICAS DO SERVIDOR SINCRONO======================')
+    # Calcular estatísticas
+    stats_sinc = calcular_estatisticas(resultados_sincrono)
+    
+    # Mostrar resultados
+    mostrar_resultados(stats_sinc)
+    
+    print('======================ESTATISTICAS DO SERVIDOR ASSINCRONO======================')
+    # Calcular estatísticas
+    stats_assinc = calcular_estatisticas(resultados_assincrono)
+    
+    # Mostrar resultados
+    mostrar_resultados(stats_assinc)
+ 
