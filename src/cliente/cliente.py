@@ -3,7 +3,7 @@ import hashlib
 import time
 import threading
 from testes import teste_sequencial, teste_concorrente
-from resultados import calcular_estatisticas, mostrar_resultados
+from resultados import calcular_estatisticas, mostrar_resultados, salvar_estatisticas_csv
 
 
 def gerar_hash():
@@ -13,10 +13,10 @@ def gerar_hash():
         return sha1_hash
 
 X_CUSTOM_ID = gerar_hash()
-MAX_THREADS = 5
-NUM_REQUISICOES_SEQ = 5
+MAX_THREADS = 2
+NUM_REQUISICOES_SEQ = 2
 NUM_REQ_CONCORRENTE = 2
-NUM_EXECUCOES = 2
+NUM_EXECUCOES = 5
  
 class Cliente():
     def __init__(self, host, porta):
@@ -97,6 +97,9 @@ if __name__ == "__main__":
     # else:
     #     print("Falha ao conectar ao servidor")
     
+    # salvar_estatisticas_csv(resultados, nome_servidor='sincrono', arquivo='resultados/resultados_sincrono.csv')
+
+    
     print(resultados_sincrono[chave1][0])   
         
     print('======================TESTE DO SERVIDOR ASSINCRONO======================')
@@ -119,6 +122,9 @@ if __name__ == "__main__":
     #     print("Falha ao conectar ao servidor")
     print(resultados_assincrono[chave1][0])
     
+    # AGORA SALVA OS CSVs (DEPOIS DE COLETAR TODOS OS DADOS)
+    print('\n======================SALVANDO RESULTADOS EM CSV======================')
+    
     
     
     print('======================ESTATISTICAS DO SERVIDOR SINCRONO======================')
@@ -132,6 +138,12 @@ if __name__ == "__main__":
     # Calcular estatísticas
     stats_assinc = calcular_estatisticas(resultados_assincrono)
     
+    salvar_estatisticas_csv(stats_sinc, nome_servidor='sincrono', arquivo='resultados/resultados_sincrono.csv')
+    salvar_estatisticas_csv(stats_assinc, nome_servidor='assincrono', arquivo='resultados/resultados_assincrono.csv')
+    
     # Mostrar resultados
+    
+    for i in stats_assinc:
+        print(i, stats_assinc[i])
     mostrar_resultados(stats_assinc)
  

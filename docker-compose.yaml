@@ -30,7 +30,8 @@ services:
     depends_on:
       - servidor-sincrono
       - servidor-assincrono
-    volumes:
+    volumes:  
+      - ./resultados:/app/resultados
       - ./src/cliente:/app
     networks:
       redes:
