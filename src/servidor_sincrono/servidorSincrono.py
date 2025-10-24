@@ -77,13 +77,13 @@ class ServidorSequencial():
                 resposta_erro = self.mensagem_erro(401, id_cliente)
                 corpo = json.dumps(resposta_erro, indent=2)
                 resposta = self.montar_mensagem_http(401, corpo, id_cliente)
-                cliente.sendall(resposta.encode('utf-8'))
+                # cliente.sendall(resposta.encode('utf-8'))
             else:
                 self.contador_requisicoes+=1
             
                 resposta = self.construir_resposta(metodo_requisicao, caminho_requisicao, id_cliente, tempo_inicial)
                 
-                cliente.sendall(resposta.encode('utf-8'))
+            cliente.sendall(resposta.encode('utf-8'))
             
         except:
             resposta_erro = self.mensagem_erro(500)
@@ -99,20 +99,16 @@ class ServidorSequencial():
     def construir_resposta(self, metodo_requisicao, caminho_requisicao, id_cliente, tempo_inicial):
         status_code = 200
         resposta = self.montar_resposta_base(metodo_requisicao, caminho_requisicao, id_cliente, tempo_inicial)
-        conteudo = ''
+        conteudo = f'Bem vindo ao servidor Concorrente!'
+        observacao = f'Metodo GET realizado na raiz'
+            
         
-        if metodo_requisicao == 'GET':
-            if caminho_requisicao == '/':
-                conteudo = f'Bem vindo ao servidor sequencial!'
-                observacao = f'Metodo GET realizado na raiz'
-            else:
-                status_code = 404
-                conteudo = f'Caminho nao encontrado'
-                observacao = f'Erro'
-        else:
-            status_code = 404
-            conteudo = f'Caminho nao encontrado'
-            observacao = f'Erro'
+        resposta.update({
+            'Mensagem': observacao,
+            'Conteudo': conteudo
+        })
+        
+        corpo = json.dumps(resposta, indent=2)
             
         
         resposta.update({

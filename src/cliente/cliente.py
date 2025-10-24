@@ -14,9 +14,9 @@ def gerar_hash():
         return sha1_hash
 
 X_CUSTOM_ID = gerar_hash()
-MAX_THREADS = 5
-NUM_REQUISICOES_SEQ = 5
-NUM_REQ_CONCORRENTE = 5
+MAX_THREADS = 10
+NUM_REQUISICOES_SEQ = 50
+NUM_REQ_CONCORRENTE = 50
 NUM_EXECUCOES = 20
  
 class Cliente():

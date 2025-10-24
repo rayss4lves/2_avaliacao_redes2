@@ -18,23 +18,23 @@ def teste_sequencial(metodo, caminho, num_requisicoes, cliente = None):
             # print(f'\t[{i+1}]  \t {response_time*1000:.2f} ms')
         else:
             falhas.append(resposta)
-            print(f'\t[{i+1}]  \t Falha na requisicao: {resposta}')
+            # print(f'\t[{i+1}]  \t Falha na requisicao: {resposta}')
     
     tempo_total = time.time()-tempo_inicial
-    media_tempos = sum(tempos)/num_requisicoes if tempos else 0
+    tempo_medio_resposta = sum(tempos)/num_requisicoes if tempos else 0
     sucesso = len(tempos)
     throughput = sucesso/tempo_total if tempo_total > 0 else 0
     
-    print(f'Taxa de sucesso: {len(tempos)}/{num_requisicoes}')
-    print(f'Tempo total = {tempo_total:.2f} s')
-    print(f'Tempo medio = {media_tempos*1000:.2f} ms\n')
-    print(f'Throughput = {throughput:.2f} req/s\n')
+    # print(f'Taxa de sucesso: {len(tempos)}/{num_requisicoes}')
+    # print(f'Tempo total = {tempo_total:.2f} s')
+    # print(f'Tempo medio = {tempo_medio_resposta*1000:.2f} ms\n')
+    # print(f'Throughput = {throughput:.2f} req/s\n')
     
     
-    return {'Tempo Total': tempo_total,
-            'Tempo Medio':media_tempos,
-            'Throughput (req/s)': throughput,
-            'Requisicões Bem Sucedidas': sucesso,
+    return {'Tempo_Total': tempo_total,
+            'Tempo_Medio':tempo_medio_resposta * 1000,
+            'Throughput': throughput * 1000,
+            'Requisicoes_Bem_Sucedidas': sucesso,
             'Falhas': len(falhas)
             }
   
@@ -51,7 +51,7 @@ def executar_cliente_concorrente(num_requisicoes, cliente = None, id_thread=0, m
                 # print(f'\tThread[{id_thread}]  Req - {i+1}\t {response_time*1000:.2f} ms')
             else:
                 falhas.append(resposta)
-                print(f'\tThread[{id_thread}]  Req - {i+1}\t Falha na requisicao: {resposta}')
+                # print(f'\tThread[{id_thread}]  Req - {i+1}\t Falha na requisicao: {resposta}')
     
   
 def teste_concorrente(metodo, caminho, num_requisicoes, num_threads, cliente = None, ):
@@ -74,21 +74,21 @@ def teste_concorrente(metodo, caminho, num_requisicoes, num_threads, cliente = N
     tempo_total = time.time()-tempo_inicial
     total_requisicoes = num_requisicoes * num_threads
     sucesso = len(tempos)
-    media_tempos = sum(tempos)/sucesso if sucesso else 0
+    tempo_medio_resposta = sum(tempos)/sucesso if sucesso else 0
     throughput = sucesso/tempo_total if tempo_total > 0 else 0
     
-    print(f'Taxa de sucesso: {len(tempos)}/{num_requisicoes}')
-    print(f'Tempo total = {tempo_total:.2f} s')
-    print(f'Tempo medio = {media_tempos*1000:.2f} ms\n')
-    print(f'Throughput = {throughput:.2f} req/s\n')
-    print(f'Falhas: {len(falhas)}\n')
-    print(f'Total de requisicões: {total_requisicoes}\n')
+    # print(f'Taxa de sucesso: {len(tempos)}/{num_requisicoes}')
+    # print(f'Tempo total = {tempo_total:.2f} s')
+    # print(f'Tempo medio = {tempo_medio_resposta*1000:.2f} ms\n')
+    # print(f'Throughput = {throughput:.2f} req/s\n')
+    # print(f'Falhas: {len(falhas)}\n')
+    # print(f'Total de requisicões: {total_requisicoes}\n')
     
     
-    return {'Tempo Total': tempo_total,
-            'Tempo Medio':media_tempos,
-            'Throughput (req/s)': throughput,
-            'Requisicões Bem Sucedidas': sucesso,
+    return {'Tempo_Total': tempo_total,
+            'Tempo_Medio':tempo_medio_resposta * 1000,
+            'Throughput': throughput * 1000,
+            'Requisicoes_Bem_Sucedidas': sucesso,
             'Falhas': len(falhas)
             }
  

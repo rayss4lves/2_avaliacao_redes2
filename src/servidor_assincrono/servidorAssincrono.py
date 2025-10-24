@@ -49,6 +49,7 @@ class ServidorConcorrente():
             self.conexoes_ativas += 1
             id_conexao = self.conexoes_ativas
             
+            
         # print(f'Conexao {id_conexao} estabelecida com {endereco}')
         
         try:
@@ -56,7 +57,7 @@ class ServidorConcorrente():
         finally:
             with self.lock:
                 self.conexoes_ativas-=1
-            cliente.close()
+            # cliente.close()
             # print(f'conexao {id_conexao} finalizada | Ativas :{self.conexoes_ativas}')
     
     # Separa a primeira linha (ex: GET /status HTTP/1.1)
@@ -87,27 +88,31 @@ class ServidorConcorrente():
         
         try:
             tempo_inicial = time.time()
-            requisicao = cliente.recv(1024)
+            requisicao = cliente.recv(4096)
 
             metodo_requisicao, caminho_requisicao, cabecalhos = self.dividir_requisicao(requisicao) 
             
             id_cliente = cabecalhos.get('X-Custom-ID', '')
-            
-            with self.lock:  
-                self.contador_requisicoes+=1
-                requisicao_atual = self.contador_requisicoes
-            
-            
-            resposta = self.construir_resposta(metodo_requisicao, caminho_requisicao, id_cliente, tempo_inicial, requisicao_atual, id_conexao)
-            
+            if id_cliente != ID_ESPERADO:
+                resposta_erro = self.mensagem_erro(401, id_cliente)
+                corpo = json.dumps(resposta_erro, indent=2)
+                resposta = self.montar_mensagem_http(401, corpo, id_cliente)
+                # cliente.sendall(resposta.encode('utf-8'))
+            else:
+                with self.lock:  
+                    self.contador_requisicoes+=1
+                    requisicao_atual = self.contador_requisicoes
+                
+                
+                resposta = self.construir_resposta(metodo_requisicao, caminho_requisicao, id_cliente, tempo_inicial, requisicao_atual, id_conexao)
+                
             cliente.sendall(resposta.encode('utf-8'))
             
-            tempo_final = time.time() - tempo_inicial
             
             # print(f'Requisicao {requisicao_atual} (conexao {id_conexao}) Tempo total {tempo_final}')
         except:
             resposta_erro = self.mensagem_erro(500, id_conexao)
-            corpo = json.dumps(resposta_erro, indent=2)
+            corpo = json.dumps(resposta_erro, separators=(',', ':'))
             resposta = self.montar_mensagem_http(500, corpo, id_cliente, id_conexao)
             cliente.sendall(resposta.encode('utf-8'))
             
@@ -115,20 +120,8 @@ class ServidorConcorrente():
     def construir_resposta(self, metodo_requisicao, caminho_requisicao, id_cliente, tempo_inicial, requisicao_atual, id_conexao):
         status_code = 200
         resposta = self.montar_resposta_base(metodo_requisicao, caminho_requisicao, id_cliente, tempo_inicial, requisicao_atual, id_conexao)
-        conteudo = ''
-        
-        if metodo_requisicao == 'GET':
-            if caminho_requisicao == '/':
-                conteudo = f'Bem vindo ao servidor Concorrente!'
-                observacao = f'Metodo GET realizado na raiz'
-            else:
-                status_code = 404
-                conteudo = f'Caminho nao encontrado'
-                observacao = f'Erro'
-        else:
-            status_code = 404
-            conteudo = f'Caminho nao encontrado'
-            observacao = f'Erro'
+        conteudo = f'Bem vindo ao servidor Concorrente!'
+        observacao = f'Metodo GET realizado na raiz'
             
         
         resposta.update({
@@ -136,7 +129,7 @@ class ServidorConcorrente():
             'Conteudo': conteudo
         })
         
-        corpo = json.dumps(resposta, indent=2)
+        corpo = json.dumps(resposta, separators=(',', ':'))
         resposta_http = self.montar_mensagem_http(status_code, corpo, id_cliente, id_conexao)
         
         
@@ -153,7 +146,7 @@ class ServidorConcorrente():
             'Data-Hora': datetime.datetime.now().strftime('%d/%m/%m/%Y %H:%M:%S'),
             'X-Custom-ID': id_cliente,
             'ID_thread': threading.current_thread().ident,
-            'Duracao': round(time.time() - tempo_inicial, 4)
+            'Tempo_Processamento': time.time() - tempo_inicial
         }
 
         return resposta

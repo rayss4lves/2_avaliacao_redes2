@@ -79,7 +79,7 @@ def calcular_estatisticas(resultados):
     
     for cenario, execucoes in resultados.items():
         resultados_estatisticas[cenario] = {}
-        # execucoes == {'Tempo Total': , 'Tempo Medio': , 'Throughput (req/s)': , 
+        # execucoes == {'Tempo Total': , 'Tempo Medio': , 'Throughput': , 
         #  'Requisicões Bem Sucedidas': , 'Falhas': }
         campos = execucoes[0].keys()
         
@@ -116,8 +116,8 @@ def grafico_vazao_execucoes(arquivo_sincrono='resultados_sincrono.csv', arquivo_
     df_assincrono = pd.read_csv(arquivo_assincrono)
 
     # Obter lista da coluna Throughput
-    vazao_sincrono = df_sincrono['Throughput (req/s)'].tolist()
-    vazao_assincrono = df_assincrono['Throughput (req/s)'].tolist()
+    vazao_sincrono = df_sincrono['Throughput'].tolist()
+    vazao_assincrono = df_assincrono['Throughput'].tolist()
 
     # Criar figura
     plt.figure(figsize=(14, 8))
@@ -125,7 +125,7 @@ def grafico_vazao_execucoes(arquivo_sincrono='resultados_sincrono.csv', arquivo_
     plt.plot(range(1, len(vazao_assincrono) + 1), vazao_assincrono, marker='s', label='Servidor Concorrente')
 
     plt.xlabel('Número da Execuçao')
-    plt.ylabel('Vazao (req/s)')
+    plt.ylabel('Vazao')
     plt.title('Comparaçao de Vazao: Sequencial vs Concorrente')
     plt.legend()
     plt.grid(True)
@@ -144,8 +144,8 @@ def grafico_tempo_execucoes(arquivo_sincrono='resultados_sincrono.csv', arquivo_
     df_assincrono = pd.read_csv(arquivo_assincrono)
 
     # Obter lista da coluna de tempo
-    tempo_sincrono = df_sincrono['Tempo Total'].tolist()
-    tempo_assincrono = df_assincrono['Tempo Total'].tolist()
+    tempo_sincrono = df_sincrono['Tempo_Total'].tolist()
+    tempo_assincrono = df_assincrono['Tempo_Total'].tolist()
 
     # Criar figura
     plt.figure(figsize=(14, 8))
@@ -174,8 +174,8 @@ def grafico_barras_throughput(arquivo_sincrono='resultados_sincrono.csv', arquiv
     df_assincrono = pd.read_csv(arquivo_assincrono)
 
     # Filtrar apenas a métrica Throughput
-    tp_sincrono = df_sincrono.loc[df_sincrono['metrica'] == 'Throughput (req/s)', 'media'].values[0]
-    tp_assincrono = df_assincrono.loc[df_assincrono['metrica'] == 'Throughput (req/s)', 'media'].values[0]
+    tp_sincrono = df_sincrono.loc[df_sincrono['metrica'] == 'Throughput', 'media'].values[0]
+    tp_assincrono = df_assincrono.loc[df_assincrono['metrica'] == 'Throughput', 'media'].values[0]
 
     # Criar grafico de barras
     servidores = ['Sequencial', 'Concorrente']
@@ -184,7 +184,7 @@ def grafico_barras_throughput(arquivo_sincrono='resultados_sincrono.csv', arquiv
     plt.figure(figsize=(8, 6))
     barras = plt.bar(servidores, valores, color=['skyblue', 'salmon'])
     
-    plt.ylabel('Throughput (req/s)')
+    plt.ylabel('Throughput')
     plt.title('Comparaçao de Média de Throughput')
     plt.grid(axis='y', linestyle='--', alpha=0.7)
 
