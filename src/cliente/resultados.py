@@ -106,7 +106,7 @@ def mostrar_resultados(estatisticas):
             desvio = valores['Desvio Padrao']
             print(f"  {metrica:.<40} Média: {media:>10.2f} | Desvio: {desvio:>10.2f}")
 
-def grafico_vazao_execucoes(arquivo_sincrono='resultados_sincrono.csv', arquivo_assincrono='resultados_assincrono.csv', output='graficos/vazao_execucoes.png'):
+def grafico_vazao_execucoes(arquivo_sincrono='resultados_sincrono.csv', arquivo_assincrono='resultados_assincrono.csv', output='../../graficos/vazao_execucoes.png'):
     
     # Diretório base e criaçao da pasta graficos
     os.makedirs(os.path.dirname(output) if os.path.dirname(output) else '.', exist_ok=True)
@@ -135,7 +135,7 @@ def grafico_vazao_execucoes(arquivo_sincrono='resultados_sincrono.csv', arquivo_
     plt.close()
 
     
-def grafico_tempo_execucoes(arquivo_sincrono='resultados_sincrono.csv', arquivo_assincrono='resultados_assincrono.csv', output='graficos/tempo_execucoes.png'):
+def grafico_tempo_execucoes(arquivo_sincrono='resultados_sincrono.csv', arquivo_assincrono='resultados_assincrono.csv', output='../../graficos/tempo_execucoes.png'):
     # Diretório base e criaçao da pasta graficos
     os.makedirs(os.path.dirname(output) if os.path.dirname(output) else '.', exist_ok=True)
 
@@ -164,7 +164,7 @@ def grafico_tempo_execucoes(arquivo_sincrono='resultados_sincrono.csv', arquivo_
 
     
     
-def grafico_barras_throughput(arquivo_sincrono='resultados_sincrono.csv', arquivo_assincrono='resultados_assincrono.csv', output='graficos/barras_throughput.png'):
+def grafico_barras_throughput(arquivo_sincrono='resultados_sincrono.csv', arquivo_assincrono='resultados_assincrono.csv', output='../../graficos/barras_throughput.png'):
 
     # Diretório base e criaçao da pasta graficos
     os.makedirs(os.path.dirname(output) if os.path.dirname(output) else '.', exist_ok=True)

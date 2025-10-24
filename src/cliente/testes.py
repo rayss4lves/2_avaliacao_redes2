@@ -1,23 +1,21 @@
 import time
 import threading
 
-MAX_THREADS = 5
-NUM_REQUISICOES_SEQ = 5
-NUM_REQ_CONCORRENTE = 2
+# MAX_THREADS = 5
+# NUM_REQUISICOES_SEQ = 5
+# NUM_REQ_CONCORRENTE = 2
 
-def teste_sequencial(metodo, caminho, num_requisicoes=NUM_REQUISICOES_SEQ, cliente = None):
-    print(f"Realizando {num_requisicoes} requisicões sequenciais para {cliente.host}:{cliente.porta}")
-    
+def teste_sequencial(metodo, caminho, num_requisicoes, cliente = None):
     tempos = []
     falhas = []
     tempo_inicial = time.time()
     for i in range(num_requisicoes):
         ok, response_time, resposta = cliente.enviar_requisicao(metodo, caminho)
         if ok:
-            print(f'------------------------------ Requisicao {i+1} ------------------------------')
-            print(resposta)
+            # print(f'------------------------------ Requisicao {i+1} ------------------------------')
+            # print(resposta)
             tempos.append(response_time)
-            print(f'\t[{i+1}]  \t {response_time*1000:.2f} ms')
+            # print(f'\t[{i+1}]  \t {response_time*1000:.2f} ms')
         else:
             falhas.append(resposta)
             print(f'\t[{i+1}]  \t Falha na requisicao: {resposta}')
@@ -41,22 +39,22 @@ def teste_sequencial(metodo, caminho, num_requisicoes=NUM_REQUISICOES_SEQ, clien
             }
   
   
-def executar_cliente_concorrente(num_requisicoes=NUM_REQ_CONCORRENTE, cliente = None, id_thread=0, metodo='GET', caminho='/', tempos=[], lock=None, falhas=[]):
+def executar_cliente_concorrente(num_requisicoes, cliente = None, id_thread=0, metodo='GET', caminho='/', tempos=[], lock=None, falhas=[]):
     
     for i in range(num_requisicoes):
         ok, response_time, resposta = cliente.enviar_requisicao(metodo, caminho)
         with lock:
             if ok:
-                print(f'---------------- Thread[{id_thread}] ----------------')
-                print(resposta)
+                # print(f'---------------- Thread[{id_thread}] ----------------')
+                # print(resposta)
                 tempos.append(response_time)
-                print(f'\tThread[{id_thread}]  Req - {i+1}\t {response_time*1000:.2f} ms')
+                # print(f'\tThread[{id_thread}]  Req - {i+1}\t {response_time*1000:.2f} ms')
             else:
                 falhas.append(resposta)
                 print(f'\tThread[{id_thread}]  Req - {i+1}\t Falha na requisicao: {resposta}')
     
   
-def teste_concorrente(num_requisicoes=NUM_REQ_CONCORRENTE, num_threads=MAX_THREADS, cliente = None, metodo='GET', caminho='/'):
+def teste_concorrente(metodo, caminho, num_requisicoes, num_threads, cliente = None, ):
     print(f"Realizando {num_requisicoes} requisicões concorrentes para {cliente.host}:{cliente.porta} com {num_threads} threads")
     
     tempos = []

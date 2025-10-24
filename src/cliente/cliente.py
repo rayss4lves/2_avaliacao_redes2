@@ -14,10 +14,10 @@ def gerar_hash():
         return sha1_hash
 
 X_CUSTOM_ID = gerar_hash()
-MAX_THREADS = 2
-NUM_REQUISICOES_SEQ = 2
-NUM_REQ_CONCORRENTE = 2
-NUM_EXECUCOES = 5
+MAX_THREADS = 5
+NUM_REQUISICOES_SEQ = 5
+NUM_REQ_CONCORRENTE = 5
+NUM_EXECUCOES = 20
  
 class Cliente():
     def __init__(self, host, porta):
@@ -68,18 +68,12 @@ if __name__ == "__main__":
     servidor_host_assincrono = 'servidor-assincrono' 
     servidor_porta_assincrono = 8080
     
-    # cenarios_teste = [
-    #     {'metodo':'GET', 'caminho':'/'}
-    # ]
-    # cenario1 = cenarios_teste[0]
-    # chave1 = f"{cenario1['metodo']} - {cenario1['caminho']}"
-    
     resultados_sincrono = {}
     resultados_assincrono = {}
     
     
     print('=======================TESTE DO SERVIDOR SINCRONO=======================')
-    # if aguardar_servidor(servidor_host_sincrono, servidor_porta_sincrono):
+    
     print('-----------Teste inicial-----------')
     cliente = Cliente(servidor_host_sincrono, servidor_porta_sincrono)
     success, response_time, resposta = cliente.enviar_requisicao(metodo='GET', caminho='/')
@@ -89,11 +83,9 @@ if __name__ == "__main__":
     resultados_sincrono['GET - /'] = []
     for i in range(NUM_EXECUCOES):
         print(f'------------------ Execucao {i+1} ------------------')
-        resultado_sincrono = teste_sequencial(metodo='GET', caminho='/', cliente=cliente)
+        resultado_sincrono = teste_sequencial(metodo='GET', caminho='/', num_requisicoes=NUM_REQUISICOES_SEQ, cliente=cliente)
         resultados_sincrono['GET - /'].append(resultado_sincrono)
-    
-    
-    print(resultados_sincrono['GET - /'])   
+     
         
     print('======================TESTE DO SERVIDOR ASSINCRONO======================')
     
@@ -105,18 +97,9 @@ if __name__ == "__main__":
     resultados_assincrono['GET - /'] = []
     for i in range(NUM_EXECUCOES):
         print(f'------------------ Execucao {i+1} ------------------')
-        resultado_assincrono = teste_sequencial(metodo='GET', caminho='/', cliente=cliente)
+        resultado_assincrono = teste_concorrente(metodo='GET', caminho='/', num_requisicoes = NUM_REQ_CONCORRENTE,  num_threads = MAX_THREADS, cliente=cliente)
         resultados_assincrono['GET - /'].append(resultado_assincrono)
-        
-    salvar_execucoes_csv(resultados_sincrono, 'sequencial', arquivo='resultados/sincrono.csv')
-    salvar_execucoes_csv(resultados_assincrono, 'concorrente', arquivo='resultados/assincrono.csv')
- 
-    print(resultados_assincrono['GET - /'])
-    
-    # AGORA SALVA OS CSVs (DEPOIS DE COLETAR TODOS OS DADOS)
-    print('\n======================SALVANDO RESULTADOS EM CSV======================')
-    
-    
+            
     
     print('======================ESTATISTICAS DO SERVIDOR SINCRONO======================')
     # Calcular estatísticas
@@ -129,19 +112,20 @@ if __name__ == "__main__":
     # Calcular estatísticas
     stats_assinc = calcular_estatisticas(resultados_assincrono)
     
+    mostrar_resultados(stats_assinc)
+
+    #SALVANDO OS CSVs
+    salvar_execucoes_csv(resultados_sincrono, 'sequencial', arquivo='resultados/sincrono.csv')
+    salvar_execucoes_csv(resultados_assincrono, 'concorrente', arquivo='resultados/assincrono.csv')
+ 
     salvar_estatisticas_csv(stats_sinc, nome_servidor='sincrono', arquivo='resultados/resultados_sincrono.csv')
     salvar_estatisticas_csv(stats_assinc, nome_servidor='assincrono', arquivo='resultados/resultados_assincrono.csv')
     
     
-    print('\n======================GERANDO GRÁFICOS======================')
+    #EXECUTANDO OS GRAFICOS
 
-    grafico_vazao_execucoes('resultados/sincrono.csv', 'resultados/assincrono.csv', 'graficos/vazao_execucoes.png')
-    
-    grafico_barras_throughput('resultados/resultados_sincrono.csv', 'resultados/resultados_assincrono.csv', 'graficos/barras_throughput.png')
-    grafico_tempo_execucoes('resultados/sincrono.csv', 'resultados/assincrono.csv', 'graficos/tempo_execucoes.png')
+    grafico_vazao_execucoes('resultados/sincrono.csv', 'resultados/assincrono.csv', '../../graficos/vazao_execucoes.png')
+    grafico_barras_throughput('resultados/resultados_sincrono.csv', 'resultados/resultados_assincrono.csv', '../../graficos/barras_throughput.png')
+    grafico_tempo_execucoes('resultados/sincrono.csv', 'resultados/assincrono.csv', '../../graficos/tempo_execucoes.png')
 
-    
-    for i in stats_assinc:
-        print(i, stats_assinc[i])
-    mostrar_resultados(stats_assinc)
  

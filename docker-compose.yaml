@@ -31,7 +31,7 @@ services:
       - servidor-sincrono
       - servidor-assincrono
     volumes:  
-      - ./graficos:/app/graficos
+      - ./graficos:/graficos
       - ./src/cliente:/app
     networks:
       redes:

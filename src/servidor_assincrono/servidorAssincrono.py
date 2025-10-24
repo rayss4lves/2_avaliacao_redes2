@@ -33,7 +33,7 @@ class ServidorConcorrente():
         try:
             self.servidor_socket.bind((self.host, self.porta))
             self.servidor_socket.listen(MAX_CONEXOES)
-            print(f'Servidor iniciado em {self.host}:{self.porta}')
+            # print(f'Servidor iniciado em {self.host}:{self.porta}')
             while True:
                 cliente, endereco = self.servidor_socket.accept()
                 thread_cliente = threading.Thread(target=self.gerenciar_cliente, args=(cliente, endereco))
@@ -121,14 +121,6 @@ class ServidorConcorrente():
             if caminho_requisicao == '/':
                 conteudo = f'Bem vindo ao servidor Concorrente!'
                 observacao = f'Metodo GET realizado na raiz'
-            else:
-                status_code = 404
-                conteudo = f'Caminho nao encontrado'
-                observacao = f'Erro'
-        elif metodo_requisicao == 'POST':
-            if caminho_requisicao == '/dados':
-                conteudo = f'Dados recebidos com sucesso!'
-                observacao = f'POST executado.'
             else:
                 status_code = 404
                 conteudo = f'Caminho nao encontrado'

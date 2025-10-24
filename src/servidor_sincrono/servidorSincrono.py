@@ -29,10 +29,10 @@ class ServidorSequencial():
         try:
             self.servidor_socket.bind((HOST, PORT))
             self.servidor_socket.listen(5)
-            print(f'Servidor iniciado em {self.host}:{self.porta}')
+            # print(f'Servidor iniciado em {self.host}:{self.porta}')
             while True:
                 cliente, endereco = self.servidor_socket.accept()
-                print(f'Conexão estabelecida com {endereco}')
+                # print(f'Conexão estabelecida com {endereco}')
                 self.tratar_cliente(cliente, endereco)
         except Exception as e:
             print(f"Erro no servidor: {e}")
@@ -105,14 +105,6 @@ class ServidorSequencial():
             if caminho_requisicao == '/':
                 conteudo = f'Bem vindo ao servidor sequencial!'
                 observacao = f'Metodo GET realizado na raiz'
-            else:
-                status_code = 404
-                conteudo = f'Caminho nao encontrado'
-                observacao = f'Erro'
-        elif metodo_requisicao == 'POST':
-            if caminho_requisicao == '/dados':
-                conteudo = f'Dados recebidos com sucesso!'
-                observacao = f'POST executado.'
             else:
                 status_code = 404
                 conteudo = f'Caminho nao encontrado'
