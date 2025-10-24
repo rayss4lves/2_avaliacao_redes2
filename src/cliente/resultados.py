@@ -1,23 +1,51 @@
 import statistics
-# import matplotlib.pyplot as plt
-# import numpy as np
- 
+import matplotlib.pyplot as plt
+import pandas as pd
+from pathlib import Path
  
 import csv
 import os
 from datetime import datetime
 
-def salvar_estatisticas_csv(estatisticas, nome_servidor, arquivo='resultados/estatisticas.csv'):
-    """
-    Salva as ESTATÍSTICAS (médias e desvios) em CSV
+
+def salvar_execucoes_csv(resultados, nome_servidor, arquivo='resultados/execucoes.csv'):
     
-    Args:
-        estatisticas: dicionário retornado por calcular_estatisticas()
-        nome_servidor: 'sincrono' ou 'assincrono'
-        arquivo: caminho do arquivo
-    """
     os.makedirs(os.path.dirname(arquivo) if os.path.dirname(arquivo) else '.', exist_ok=True)
-    arquivo_existe = os.path.exists(arquivo)
+    timestamp = datetime.now().strftime('%Y-%m-%d %H:%M:%S')
+    
+    linhas = []
+    for cenario, execucoes in resultados.items():
+        for i, execucao in enumerate(execucoes, start=1):
+            linha = {
+                "timestamp": timestamp,
+                "servidor": nome_servidor,
+                "cenario": cenario,
+                "execucao": i,
+            }
+            # Adiciona todas as métricas do dicionario de execuçao
+            linha.update(execucao)
+            linhas.append(linha)
+    
+    if not linhas:
+        print("Nenhuma execuçao para salvar")
+        return
+    
+    # Determinar todas as colunas: timestamp, servidor, cenario, execucao + chaves das métricas
+    campos_base = ['timestamp', 'servidor', 'cenario', 'execucao']
+    campos_metrica = set()
+    for linha in linhas:
+        campos_metrica.update(k for k in linha.keys() if k not in campos_base)
+    campos = campos_base + sorted(campos_metrica)
+    
+    with open(arquivo, 'w', newline='', encoding='utf-8') as f:
+        writer = csv.DictWriter(f, fieldnames=campos)
+        writer.writeheader()
+        writer.writerows(linhas)
+    
+
+def salvar_estatisticas_csv(estatisticas, nome_servidor, arquivo='resultados/estatisticas.csv'):
+   
+    os.makedirs(os.path.dirname(arquivo) if os.path.dirname(arquivo) else '.', exist_ok=True)
 
     linhas = []
     timestamp = datetime.now().strftime('%Y-%m-%d %H:%M:%S')
@@ -35,18 +63,15 @@ def salvar_estatisticas_csv(estatisticas, nome_servidor, arquivo='resultados/est
             linhas.append(linha)
 
     if not linhas:
-        print("⚠️ Nenhuma estatística para salvar")
+        print("Nenhuma estatística para salvar")
         return
 
     campos = ['timestamp', 'servidor', 'cenario', 'metrica', 'media', 'desvio_padrao']
-    with open(arquivo, 'a', newline='', encoding='utf-8') as f:
+    with open(arquivo, 'w', newline='', encoding='utf-8') as f:
         writer = csv.DictWriter(f, fieldnames=campos)
-        if not arquivo_existe:
-            writer.writeheader()
+        writer.writeheader()
         writer.writerows(linhas)
 
-    print(f"✓ Estatísticas salvas em {arquivo} - {len(linhas)} linhas")
- 
 
 def calcular_estatisticas(resultados):
     
@@ -71,20 +96,104 @@ def calcular_estatisticas(resultados):
 
 
 def mostrar_resultados(estatisticas):
-    """
-    Exibe os resultados das estatísticas de forma formatada
-    """
-    print("=" * 80)
-    print("RESULTADOS DAS ESTATÍSTICAS")
-    print("=" * 80)
+    
+    print('================================= RESULTADOS DAS ESTATÍSTICAS =================================')
     
     for cenario, metricas in estatisticas.items():
-        print(f"\n{cenario}:")
-        print("-" * 80)
         
         for metrica, valores in metricas.items():
             media = valores['Media']
             desvio = valores['Desvio Padrao']
             print(f"  {metrica:.<40} Média: {media:>10.2f} | Desvio: {desvio:>10.2f}")
 
+def grafico_vazao_execucoes(arquivo_sincrono='resultados_sincrono.csv', arquivo_assincrono='resultados_assincrono.csv', output='graficos/vazao_execucoes.png'):
+    
+    # Diretório base e criaçao da pasta graficos
+    os.makedirs(os.path.dirname(output) if os.path.dirname(output) else '.', exist_ok=True)
 
+    # Carregar dados
+    df_sincrono = pd.read_csv(arquivo_sincrono)
+    df_assincrono = pd.read_csv(arquivo_assincrono)
+
+    # Obter lista da coluna Throughput
+    vazao_sincrono = df_sincrono['Throughput (req/s)'].tolist()
+    vazao_assincrono = df_assincrono['Throughput (req/s)'].tolist()
+
+    # Criar figura
+    plt.figure(figsize=(14, 8))
+    plt.plot(range(1, len(vazao_sincrono) + 1), vazao_sincrono, marker='o', label='Servidor Sequencial')
+    plt.plot(range(1, len(vazao_assincrono) + 1), vazao_assincrono, marker='s', label='Servidor Concorrente')
+
+    plt.xlabel('Número da Execuçao')
+    plt.ylabel('Vazao (req/s)')
+    plt.title('Comparaçao de Vazao: Sequencial vs Concorrente')
+    plt.legend()
+    plt.grid(True)
+
+    plt.tight_layout()
+    plt.savefig(output, dpi=300, bbox_inches='tight')
+    plt.close()
+
+    
+def grafico_tempo_execucoes(arquivo_sincrono='resultados_sincrono.csv', arquivo_assincrono='resultados_assincrono.csv', output='graficos/tempo_execucoes.png'):
+    # Diretório base e criaçao da pasta graficos
+    os.makedirs(os.path.dirname(output) if os.path.dirname(output) else '.', exist_ok=True)
+
+    # Carregar dados
+    df_sincrono = pd.read_csv(arquivo_sincrono)
+    df_assincrono = pd.read_csv(arquivo_assincrono)
+
+    # Obter lista da coluna de tempo
+    tempo_sincrono = df_sincrono['Tempo Total'].tolist()
+    tempo_assincrono = df_assincrono['Tempo Total'].tolist()
+
+    # Criar figura
+    plt.figure(figsize=(14, 8))
+    plt.plot(range(1, len(tempo_sincrono) + 1), tempo_sincrono, marker='o', label='Servidor Sequencial')
+    plt.plot(range(1, len(tempo_assincrono) + 1), tempo_assincrono, marker='s', label='Servidor Concorrente')
+
+    plt.xlabel('Número da Execuçao')
+    plt.ylabel('Tempo de Execuçao (s)')
+    plt.title(f'Comparaçao de Tempo de Execuçao: Sequencial vs Concorrente')
+    plt.legend()
+    plt.grid(True)
+
+    plt.tight_layout()
+    plt.savefig(output, dpi=300, bbox_inches='tight')
+    plt.close()
+
+    
+    
+def grafico_barras_throughput(arquivo_sincrono='resultados_sincrono.csv', arquivo_assincrono='resultados_assincrono.csv', output='graficos/barras_throughput.png'):
+
+    # Diretório base e criaçao da pasta graficos
+    os.makedirs(os.path.dirname(output) if os.path.dirname(output) else '.', exist_ok=True)
+
+    # Carregar dados
+    df_sincrono = pd.read_csv(arquivo_sincrono)
+    df_assincrono = pd.read_csv(arquivo_assincrono)
+
+    # Filtrar apenas a métrica Throughput
+    tp_sincrono = df_sincrono.loc[df_sincrono['metrica'] == 'Throughput (req/s)', 'media'].values[0]
+    tp_assincrono = df_assincrono.loc[df_assincrono['metrica'] == 'Throughput (req/s)', 'media'].values[0]
+
+    # Criar grafico de barras
+    servidores = ['Sequencial', 'Concorrente']
+    valores = [tp_sincrono, tp_assincrono]
+
+    plt.figure(figsize=(8, 6))
+    barras = plt.bar(servidores, valores, color=['skyblue', 'salmon'])
+    
+    plt.ylabel('Throughput (req/s)')
+    plt.title('Comparaçao de Média de Throughput')
+    plt.grid(axis='y', linestyle='--', alpha=0.7)
+
+    # Adicionar valores no topo das barras
+    for barra in barras:
+        altura = barra.get_height()
+        plt.text(barra.get_x() + barra.get_width()/2, altura + altura*0.01, f"{altura:.2f}", 
+                 ha='center', va='bottom')
+
+    plt.tight_layout()
+    plt.savefig(output, dpi=300, bbox_inches='tight')
+    plt.close()

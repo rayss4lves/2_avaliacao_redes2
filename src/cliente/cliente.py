@@ -3,7 +3,8 @@ import hashlib
 import time
 import threading
 from testes import teste_sequencial, teste_concorrente
-from resultados import calcular_estatisticas, mostrar_resultados, salvar_estatisticas_csv
+from resultados import calcular_estatisticas, mostrar_resultados, salvar_execucoes_csv
+from resultados import salvar_estatisticas_csv, grafico_vazao_execucoes, grafico_barras_throughput, grafico_tempo_execucoes
 
 
 def gerar_hash():
@@ -67,12 +68,11 @@ if __name__ == "__main__":
     servidor_host_assincrono = 'servidor-assincrono' 
     servidor_porta_assincrono = 8080
     
-    cenarios_teste = [
-        {'metodo':'GET', 'caminho':'/'},
-        {'metodo':'POST', 'caminho':'/dados'},
-    ]
-    cenario1 = cenarios_teste[0]
-    chave1 = f"{cenario1['metodo']} - {cenario1['caminho']}"
+    # cenarios_teste = [
+    #     {'metodo':'GET', 'caminho':'/'}
+    # ]
+    # cenario1 = cenarios_teste[0]
+    # chave1 = f"{cenario1['metodo']} - {cenario1['caminho']}"
     
     resultados_sincrono = {}
     resultados_assincrono = {}
@@ -85,42 +85,33 @@ if __name__ == "__main__":
     success, response_time, resposta = cliente.enviar_requisicao(metodo='GET', caminho='/')
     print(f"\nSuccess: {success}, Response Time: {response_time}")
     print(resposta)
-    for cenario in cenarios_teste:
-        resultados = []
-        chave = f"{cenario['metodo']} - {cenario['caminho']}"
-        print(f'------------------------------ Cenario {cenario["metodo"]} ------------------------------')
-        for i in range(NUM_EXECUCOES):
-            print(f'------------------ Execucao {i+1} ------------------')
-            resultado_sincrono = teste_sequencial(metodo=cenario['metodo'], caminho=cenario['caminho'], cliente=cliente)
-            resultados.append(resultado_sincrono)
-        resultados_sincrono[chave] = resultados
-    # else:
-    #     print("Falha ao conectar ao servidor")
     
-    # salvar_estatisticas_csv(resultados, nome_servidor='sincrono', arquivo='resultados/resultados_sincrono.csv')
-
+    resultados_sincrono['GET - /'] = []
+    for i in range(NUM_EXECUCOES):
+        print(f'------------------ Execucao {i+1} ------------------')
+        resultado_sincrono = teste_sequencial(metodo='GET', caminho='/', cliente=cliente)
+        resultados_sincrono['GET - /'].append(resultado_sincrono)
     
-    print(resultados_sincrono[chave1][0])   
+    
+    print(resultados_sincrono['GET - /'])   
         
     print('======================TESTE DO SERVIDOR ASSINCRONO======================')
-    #if aguardar_servidor(servidor_host_assincrono, servidor_porta_assincrono):
+    
     print('-----------Teste inicial-----------')
     cliente = Cliente(servidor_host_assincrono, servidor_porta_assincrono)
     success, response_time, resposta = cliente.enviar_requisicao(metodo='GET', caminho='/')
     print(f"\nSuccess: {success}, Response Time: {response_time}")
     print(resposta)
-    for cenario in cenarios_teste:
-        resultados = []
-        chave = f"{cenario['metodo']} - {cenario['caminho']}"
-        print(f'------------------------------ Cenario {cenario["metodo"]} ------------------------------')
-        for i in range(NUM_EXECUCOES):
-            print(f'------------------ Execucao {i+1} ------------------')
-            resultado_assincrono = teste_concorrente(metodo=cenario['metodo'], caminho=cenario['caminho'], cliente=cliente)
-            resultados.append(resultado_assincrono)
-        resultados_assincrono[chave] = resultados
-    # else:
-    #     print("Falha ao conectar ao servidor")
-    print(resultados_assincrono[chave1][0])
+    resultados_assincrono['GET - /'] = []
+    for i in range(NUM_EXECUCOES):
+        print(f'------------------ Execucao {i+1} ------------------')
+        resultado_assincrono = teste_sequencial(metodo='GET', caminho='/', cliente=cliente)
+        resultados_assincrono['GET - /'].append(resultado_assincrono)
+        
+    salvar_execucoes_csv(resultados_sincrono, 'sequencial', arquivo='resultados/sincrono.csv')
+    salvar_execucoes_csv(resultados_assincrono, 'concorrente', arquivo='resultados/assincrono.csv')
+ 
+    print(resultados_assincrono['GET - /'])
     
     # AGORA SALVA OS CSVs (DEPOIS DE COLETAR TODOS OS DADOS)
     print('\n======================SALVANDO RESULTADOS EM CSV======================')
@@ -141,7 +132,14 @@ if __name__ == "__main__":
     salvar_estatisticas_csv(stats_sinc, nome_servidor='sincrono', arquivo='resultados/resultados_sincrono.csv')
     salvar_estatisticas_csv(stats_assinc, nome_servidor='assincrono', arquivo='resultados/resultados_assincrono.csv')
     
-    # Mostrar resultados
+    
+    print('\n======================GERANDO GRÁFICOS======================')
+
+    grafico_vazao_execucoes('resultados/sincrono.csv', 'resultados/assincrono.csv', 'graficos/vazao_execucoes.png')
+    
+    grafico_barras_throughput('resultados/resultados_sincrono.csv', 'resultados/resultados_assincrono.csv', 'graficos/barras_throughput.png')
+    grafico_tempo_execucoes('resultados/sincrono.csv', 'resultados/assincrono.csv', 'graficos/tempo_execucoes.png')
+
     
     for i in stats_assinc:
         print(i, stats_assinc[i])
