@@ -86,7 +86,7 @@ Contém os gráficos gerados automaticamente após a execução dos testes, apre
 
 ```bash
 # 1. Clonar repositório
-git clone <URL_DO_REPOSITORIO>
+git clone <https://github.com/rayss4lves/2_avaliacao_redes2.git>
 cd 2.AVALIACAO_REDES2-1
 
 # 2. Iniciar containers
