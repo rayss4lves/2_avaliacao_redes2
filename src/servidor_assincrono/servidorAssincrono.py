@@ -8,7 +8,9 @@ import threading
 
 PORT = 8080
 HOST = '0.0.0.0'
-MAX_CONEXOES = 10
+MAX_CONEXOES = 5
+#novo cenario de testes
+#modificar o max conexoes e colocar os valores numa tabela
 
 def gerar_hash():
     chave = '20239019558 Rayssa Alves'
@@ -33,7 +35,7 @@ class ServidorConcorrente():
         try:
             self.servidor_socket.bind((self.host, self.porta))
             self.servidor_socket.listen(MAX_CONEXOES)
-            # print(f'Servidor iniciado em {self.host}:{self.porta}')
+           
             while True:
                 cliente, endereco = self.servidor_socket.accept()
                 thread_cliente = threading.Thread(target=self.gerenciar_cliente, args=(cliente, endereco))
@@ -48,16 +50,12 @@ class ServidorConcorrente():
         with self.lock:
             self.conexoes_ativas += 1
             id_conexao = self.conexoes_ativas
-            
-            
-        # print(f'Conexao {id_conexao} estabelecida com {endereco}')
         
         try:
             self.tratar_cliente(cliente, endereco, id_conexao)
         finally:
             with self.lock:
                 self.conexoes_ativas-=1
-            # cliente.close()
             # print(f'conexao {id_conexao} finalizada | Ativas :{self.conexoes_ativas}')
     
     # Separa a primeira linha (ex: GET /status HTTP/1.1)
@@ -97,7 +95,6 @@ class ServidorConcorrente():
                 resposta_erro = self.mensagem_erro(401, id_cliente)
                 corpo = json.dumps(resposta_erro, indent=2)
                 resposta = self.montar_mensagem_http(401, corpo, id_cliente)
-                # cliente.sendall(resposta.encode('utf-8'))
             else:
                 with self.lock:  
                     self.contador_requisicoes+=1
@@ -108,11 +105,9 @@ class ServidorConcorrente():
                 
             cliente.sendall(resposta.encode('utf-8'))
             
-            
-            # print(f'Requisicao {requisicao_atual} (conexao {id_conexao}) Tempo total {tempo_final}')
         except:
             resposta_erro = self.mensagem_erro(500, id_conexao)
-            corpo = json.dumps(resposta_erro, separators=(',', ':'))
+            corpo = json.dumps(resposta_erro, indent=2)
             resposta = self.montar_mensagem_http(500, corpo, id_cliente, id_conexao)
             cliente.sendall(resposta.encode('utf-8'))
             
@@ -129,7 +124,7 @@ class ServidorConcorrente():
             'Conteudo': conteudo
         })
         
-        corpo = json.dumps(resposta, separators=(',', ':'))
+        corpo = json.dumps(resposta, indent=2)
         resposta_http = self.montar_mensagem_http(status_code, corpo, id_cliente, id_conexao)
         
         
@@ -170,7 +165,6 @@ class ServidorConcorrente():
             f'HTTP/1.1 {status_code} {mensagem_requisicao}\r\n'
             'Content-Type: application/json\r\n'
             f'Content-Length: {len(corpo.encode("utf-8"))}\r\n'
-            'Server: Servidor Concorrente\r\n'
             f'ID-Recebido: {id_cliente}\r\n'
             f'ID-Thread: {threading.current_thread().ident}\r\n'
             f'ID-Conexao: {id_conexao}\r\n'
@@ -184,7 +178,7 @@ class ServidorConcorrente():
         #Para o servidor
         if self.servidor_socket:
             self.servidor_socket.close()
-            print("Servidor Concorrente parado")
+            # print("Servidor Concorrente parado")
 
 if __name__ == "__main__":
     servidor = ServidorConcorrente()

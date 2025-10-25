@@ -67,7 +67,7 @@ class ServidorSequencial():
         
         try:
             tempo_inicial = time.time()
-            requisicao = cliente.recv(1024)
+            requisicao = cliente.recv(4096)
 
             metodo_requisicao, caminho_requisicao, cabecalhos = self.dividir_requisicao(requisicao) 
             
@@ -77,7 +77,6 @@ class ServidorSequencial():
                 resposta_erro = self.mensagem_erro(401, id_cliente)
                 corpo = json.dumps(resposta_erro, indent=2)
                 resposta = self.montar_mensagem_http(401, corpo, id_cliente)
-                # cliente.sendall(resposta.encode('utf-8'))
             else:
                 self.contador_requisicoes+=1
             
@@ -90,26 +89,12 @@ class ServidorSequencial():
             corpo = json.dumps(resposta_erro, indent=2)
             resposta = self.montar_mensagem_http(500, corpo, id_cliente)
             cliente.sendall(resposta.encode('utf-8'))
-
-        finally:
-            cliente.close()
-            print(f'Conexão com {endereco} encerrada')
-            
             
     def construir_resposta(self, metodo_requisicao, caminho_requisicao, id_cliente, tempo_inicial):
         status_code = 200
         resposta = self.montar_resposta_base(metodo_requisicao, caminho_requisicao, id_cliente, tempo_inicial)
         conteudo = f'Bem vindo ao servidor Concorrente!'
-        observacao = f'Metodo GET realizado na raiz'
-            
-        
-        resposta.update({
-            'Mensagem': observacao,
-            'Conteudo': conteudo
-        })
-        
-        corpo = json.dumps(resposta, indent=2)
-            
+        observacao = f'Metodo GET realizado na raiz'  
         
         resposta.update({
             'Mensagem': observacao,
@@ -162,7 +147,7 @@ class ServidorSequencial():
         #Para o servidor
         if self.servidor_socket:
             self.servidor_socket.close()
-            print("Servidor sequencial parado")
+            # print("Servidor sequencial parado")
 
 if __name__ == "__main__":
     servidor = ServidorSequencial()

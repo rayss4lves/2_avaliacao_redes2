@@ -12,13 +12,13 @@ def teste_sequencial(metodo, caminho, num_requisicoes, cliente = None):
     for i in range(num_requisicoes):
         ok, response_time, resposta = cliente.enviar_requisicao(metodo, caminho)
         if ok:
-            # print(f'------------------------------ Requisicao {i+1} ------------------------------')
+            print(f'------------------------------ Requisicao {i+1} ------------------------------')
             # print(resposta)
             tempos.append(response_time)
             # print(f'\t[{i+1}]  \t {response_time*1000:.2f} ms')
         else:
             falhas.append(resposta)
-            # print(f'\t[{i+1}]  \t Falha na requisicao: {resposta}')
+            print(f'\t[{i+1}]  \t Falha na requisicao: {resposta}')
     
     tempo_total = time.time()-tempo_inicial
     tempo_medio_resposta = sum(tempos)/num_requisicoes if tempos else 0
@@ -32,9 +32,9 @@ def teste_sequencial(metodo, caminho, num_requisicoes, cliente = None):
     
     
     return {'Tempo_Total': tempo_total,
-            'Tempo_Medio':tempo_medio_resposta * 1000,
-            'Throughput': throughput * 1000,
-            'Requisicoes_Bem_Sucedidas': sucesso,
+            'Tempo_Medio_Resposta':tempo_medio_resposta,
+            'Throughput': throughput,
+            'Requisicões Bem Sucedidas': sucesso,
             'Falhas': len(falhas)
             }
   
@@ -45,17 +45,17 @@ def executar_cliente_concorrente(num_requisicoes, cliente = None, id_thread=0, m
         ok, response_time, resposta = cliente.enviar_requisicao(metodo, caminho)
         with lock:
             if ok:
-                # print(f'---------------- Thread[{id_thread}] ----------------')
+                print(f'---------------- Thread[{id_thread}] Req - {i+1}\t ----------------')
                 # print(resposta)
                 tempos.append(response_time)
                 # print(f'\tThread[{id_thread}]  Req - {i+1}\t {response_time*1000:.2f} ms')
             else:
                 falhas.append(resposta)
-                # print(f'\tThread[{id_thread}]  Req - {i+1}\t Falha na requisicao: {resposta}')
+                print(f'\tThread[{id_thread}]  Req - {i+1}\t Falha na requisicao: {resposta}')
     
   
 def teste_concorrente(metodo, caminho, num_requisicoes, num_threads, cliente = None, ):
-    print(f"Realizando {num_requisicoes} requisicões concorrentes para {cliente.host}:{cliente.porta} com {num_threads} threads")
+    # print(f"Realizando {num_requisicoes} requisicões concorrentes para {cliente.host}:{cliente.porta} com {num_threads} threads")
     
     tempos = []
     falhas = []
@@ -86,9 +86,9 @@ def teste_concorrente(metodo, caminho, num_requisicoes, num_threads, cliente = N
     
     
     return {'Tempo_Total': tempo_total,
-            'Tempo_Medio':tempo_medio_resposta * 1000,
-            'Throughput': throughput * 1000,
-            'Requisicoes_Bem_Sucedidas': sucesso,
+            'Tempo_Medio_Resposta':tempo_medio_resposta,
+            'Throughput': throughput,
+            'Requisicões Bem Sucedidas': sucesso,
             'Falhas': len(falhas)
             }
  
