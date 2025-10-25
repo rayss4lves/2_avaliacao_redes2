@@ -2,11 +2,9 @@
 
 **UFPI - CSHNB | Sistemas de Informação | Trabalho Individual**
 
-## 📋 Sobre o Projeto
-
-**Autor**: Rayssa dos Santos Alves
-**Matrícula**: 20239019558
-**Entrega**: 29/10/2025
+- **Autor**: Rayssa dos Santos Alves
+- **Matrícula**: 20239019558
+- **Entrega**: 29/10/2025
 
 ## 🎯 Projeto
 Este projeto implementa uma simulação de sistemas cliente-servidor para uma comparação de desempenho entre os servidores sequencial e concorrente, usando sockets TCP/IP com protocolo HTTP. O objetivo é avaliar métricas como throughput, tempo de resposta.
@@ -57,7 +55,7 @@ Contém os gráficos gerados automaticamente após a execução dos testes, apre
 - **dockerfile.assincrono**: Configuração do container Ubuntu para o servidor assíncrono
 
 ## 🔧 Tecnologias
-- **Python 3.x**: Linguagem de programação
+- **Python 3.12**: Linguagem de programação
 - **Sockets TCP/IP**: Comunicação de rede de baixo nível
 - **Protocolo HTTP**: Estruturação manual de mensagens
 - **Docker**: Virtualização e isolamento de containers
@@ -87,7 +85,7 @@ Contém os gráficos gerados automaticamente após a execução dos testes, apre
 ```bash
 # 1. Clonar repositório
 git clone <https://github.com/rayss4lves/2_avaliacao_redes2.git>
-cd 2.AVALIACAO_REDES2-1
+cd 2_avaliacao_redes2
 
 # 2. Iniciar containers
 docker-compose up --build           #inicia tos os containers e executa os testes
