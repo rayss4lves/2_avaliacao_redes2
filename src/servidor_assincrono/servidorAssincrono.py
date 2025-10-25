@@ -12,6 +12,7 @@ MAX_CONEXOES = 5
 #novo cenario de testes
 #modificar o max conexoes e colocar os valores numa tabela
 
+# Gera um hash SHA1 fixo usado como ID esperado pelos clientes
 def gerar_hash():
     chave = '20239019558 Rayssa Alves'
     sha1_hash = hashlib.sha1(chave.encode()).hexdigest()
@@ -20,6 +21,7 @@ def gerar_hash():
 ID_ESPERADO = gerar_hash()
 
 class ServidorConcorrente():
+    # Inicializa a instância do servidor concorrente
     def __init__(self, host = HOST, porta = PORT):
         self.host = host
         self.porta = porta
@@ -28,6 +30,8 @@ class ServidorConcorrente():
         self.lock = threading.Lock()
         self.conexoes_ativas = 0
     
+    # Inicializa o servidor criando o socket do servidor, faz bind/listen e aceita conexões.
+    # Para cada conexão cria uma thread para gerenciar o cliente.
     def iniciar_servidor(self):
         self.servidor_socket = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
         self.servidor_socket.setsockopt(socket.SOL_SOCKET, socket.SO_REUSEADDR, 1)
@@ -38,21 +42,21 @@ class ServidorConcorrente():
            
             while True:
                 cliente, endereco = self.servidor_socket.accept()
-                thread_cliente = threading.Thread(target=self.gerenciar_cliente, args=(cliente, endereco))
+                thread_cliente = threading.Thread(target=self.controlar_cliente_thread, args=(cliente, endereco))
                 thread_cliente.daemon = True
                 thread_cliente.start()
         except Exception as e:
             print(f"Erro no servidor: {e}")
         finally:
             self.parar()
-            
-    def gerenciar_cliente(self, cliente, endereco):
+      
+    # Faz o controle de contador de conexões ativas utilizando lock.      
+    def controlar_cliente_thread(self, cliente, endereco):
         with self.lock:
             self.conexoes_ativas += 1
             id_conexao = self.conexoes_ativas
-        
         try:
-            self.tratar_cliente(cliente, endereco, id_conexao)
+            self.processar_requisicao_cliente(cliente, endereco, id_conexao)
         finally:
             with self.lock:
                 self.conexoes_ativas-=1
@@ -78,11 +82,12 @@ class ServidorConcorrente():
             
             
         except Exception as e:
-            print(f"Error parsing request: {e}")
+            print(f"Erro ao analisar a requisicao: {e}")
         
         return metodo_requisicao, caminho_requisicao, cabecalhos
-            
-    def tratar_cliente(self, cliente, endereco, id_conexao):
+     
+    # Trata cada conexao de cliente: lê requisicão, valida ID, monta e envia resposta       
+    def processar_requisicao_cliente(self, cliente, endereco, id_conexao):
         
         try:
             tempo_inicial = time.time()
@@ -92,7 +97,7 @@ class ServidorConcorrente():
             
             id_cliente = cabecalhos.get('X-Custom-ID', '')
             if id_cliente != ID_ESPERADO:
-                resposta_erro = self.mensagem_erro(401, id_cliente)
+                resposta_erro = HTTPStatus(401).phrase
                 corpo = json.dumps(resposta_erro, indent=2)
                 resposta = self.montar_mensagem_http(401, corpo, id_cliente)
             else:
@@ -100,21 +105,28 @@ class ServidorConcorrente():
                     self.contador_requisicoes+=1
                     requisicao_atual = self.contador_requisicoes
                 
-                
                 resposta = self.construir_resposta(metodo_requisicao, caminho_requisicao, id_cliente, tempo_inicial, requisicao_atual, id_conexao)
                 
             cliente.sendall(resposta.encode('utf-8'))
             
         except:
-            resposta_erro = self.mensagem_erro(500, id_conexao)
+            resposta_erro = HTTPStatus(500).phrase
             corpo = json.dumps(resposta_erro, indent=2)
             resposta = self.montar_mensagem_http(500, corpo, id_cliente, id_conexao)
             cliente.sendall(resposta.encode('utf-8'))
-            
-            
+        finally:
+            cliente.close()    
+     
+    # Constroi o corpo JSON da resposta para requisicoes validas        
     def construir_resposta(self, metodo_requisicao, caminho_requisicao, id_cliente, tempo_inicial, requisicao_atual, id_conexao):
         status_code = 200
-        resposta = self.montar_resposta_base(metodo_requisicao, caminho_requisicao, id_cliente, tempo_inicial, requisicao_atual, id_conexao)
+        resposta = {
+            'Metodo': metodo_requisicao, 
+            'Caminho': caminho_requisicao,
+            'Numero da Requisicao': requisicao_atual,
+            'Duracao': f'{time.time() - tempo_inicial:.6f}s'
+            
+        }
         conteudo = f'Bem vindo ao servidor Concorrente!'
         observacao = f'Metodo GET realizado na raiz'
             
@@ -129,51 +141,26 @@ class ServidorConcorrente():
         
         
         return resposta_http
-
-    def montar_resposta_base(self, metodo_requisicao, caminho_requisicao, id_cliente, tempo_inicial, requisicao_atual, id_conexao):
-
-        resposta = {
-            'Servidor': 'Concorrente',
-            'Metodo': metodo_requisicao, 
-            'Caminho': caminho_requisicao,
-            'Numero da Requisicao': requisicao_atual,
-            'Id_conexao': id_conexao,
-            'Data-Hora': datetime.datetime.now().strftime('%d/%m/%m/%Y %H:%M:%S'),
-            'X-Custom-ID': id_cliente,
-            'ID_thread': threading.current_thread().ident,
-            'Tempo_Processamento': time.time() - tempo_inicial
-        }
-
-        return resposta
-    
-    def mensagem_erro(self, status_code, id_conexao):
-        corpo_erro ={
-            'erro': status_code,
-            'mensagem': HTTPStatus(status_code).phrase,
-            'timestamp':datetime.datetime.now().isoformat(),
-            'tipo_servidor': 'concorrente',
-            'id_conexao': id_conexao,
-            'id_thread': threading.current_thread().ident
-        }
-        return corpo_erro
-    
         
-
+    # Monta a resposta HTTP completa 
     def montar_mensagem_http(self, status_code, corpo, id_cliente, id_conexao):
         mensagem_requisicao = HTTPStatus(status_code).phrase
         resposta_http = (
             f'HTTP/1.1 {status_code} {mensagem_requisicao}\r\n'
             'Content-Type: application/json\r\n'
             f'Content-Length: {len(corpo.encode("utf-8"))}\r\n'
-            f'ID-Recebido: {id_cliente}\r\n'
+            'Server: Servidor Concorrente\r\n'
+            f'X-Custom-ID: {id_cliente}\r\n'
             f'ID-Thread: {threading.current_thread().ident}\r\n'
             f'ID-Conexao: {id_conexao}\r\n'
             'Connection: close\r\n\r\n'
+            f'Data-Hora: {datetime.datetime.now().isoformat()}\r\n'
             f'{corpo}'
             )
 
         return resposta_http
     
+    # Fecha o socket do servidor
     def parar(self):
         #Para o servidor
         if self.servidor_socket:

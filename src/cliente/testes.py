@@ -1,10 +1,7 @@
 import time
 import threading
 
-# MAX_THREADS = 5
-# NUM_REQUISICOES_SEQ = 5
-# NUM_REQ_CONCORRENTE = 2
-
+# Função que realiza testes sequenciais em um servidor HTTP
 def teste_sequencial(metodo, caminho, num_requisicoes, cliente = None):
     tempos = []
     falhas = []
@@ -25,12 +22,7 @@ def teste_sequencial(metodo, caminho, num_requisicoes, cliente = None):
     sucesso = len(tempos)
     throughput = sucesso/tempo_total if tempo_total > 0 else 0
     
-    # print(f'Taxa de sucesso: {len(tempos)}/{num_requisicoes}')
-    # print(f'Tempo total = {tempo_total:.2f} s')
-    # print(f'Tempo medio = {tempo_medio_resposta*1000:.2f} ms\n')
-    # print(f'Throughput = {throughput:.2f} req/s\n')
-    
-    
+    # Retorna resultados em formato de dicionário
     return {'Tempo_Total': tempo_total,
             'Tempo_Medio_Resposta':tempo_medio_resposta,
             'Throughput': throughput,
@@ -38,7 +30,8 @@ def teste_sequencial(metodo, caminho, num_requisicoes, cliente = None):
             'Falhas': len(falhas)
             }
   
-  
+# Essa função executa cada thread no teste concorrente
+# Realiza um conjunto de requisições para cada thread 
 def executar_cliente_concorrente(num_requisicoes, cliente = None, id_thread=0, metodo='GET', caminho='/', tempos=[], lock=None, falhas=[]):
     
     for i in range(num_requisicoes):
@@ -53,7 +46,7 @@ def executar_cliente_concorrente(num_requisicoes, cliente = None, id_thread=0, m
                 falhas.append(resposta)
                 print(f'\tThread[{id_thread}]  Req - {i+1}\t Falha na requisicao: {resposta}')
     
-  
+# Função que realiza testes concorrentes usando múltiplas threads 
 def teste_concorrente(metodo, caminho, num_requisicoes, num_threads, cliente = None, ):
     # print(f"Realizando {num_requisicoes} requisicões concorrentes para {cliente.host}:{cliente.porta} com {num_threads} threads")
     
@@ -63,11 +56,13 @@ def teste_concorrente(metodo, caminho, num_requisicoes, num_threads, cliente = N
     lock = threading.Lock()
     threads = []
     
+    # Cria e inicia múltiplas threads para enviar requisições simultâneas, sem bloqueio ou espera
     for i in range(num_threads):
         thread = threading.Thread(target=executar_cliente_concorrente, args=(num_requisicoes, cliente, i+1, metodo, caminho, tempos, lock, falhas))
         threads.append(thread)
         thread.start()
-        
+    
+    #aguarda todas as threads terminarem  
     for thread in threads:
         thread.join()
         
@@ -77,14 +72,7 @@ def teste_concorrente(metodo, caminho, num_requisicoes, num_threads, cliente = N
     tempo_medio_resposta = sum(tempos)/sucesso if sucesso else 0
     throughput = sucesso/tempo_total if tempo_total > 0 else 0
     
-    # print(f'Taxa de sucesso: {len(tempos)}/{num_requisicoes}')
-    # print(f'Tempo total = {tempo_total:.2f} s')
-    # print(f'Tempo medio = {tempo_medio_resposta*1000:.2f} ms\n')
-    # print(f'Throughput = {throughput:.2f} req/s\n')
-    # print(f'Falhas: {len(falhas)}\n')
-    # print(f'Total de requisicões: {total_requisicoes}\n')
-    
-    
+    # Retorna resultados em formato de dicionário
     return {'Tempo_Total': tempo_total,
             'Tempo_Medio_Resposta':tempo_medio_resposta,
             'Throughput': throughput,

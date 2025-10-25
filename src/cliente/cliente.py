@@ -6,7 +6,7 @@ from testes import teste_sequencial, teste_concorrente
 from resultados import calcular_estatisticas, mostrar_resultados, salvar_execucoes_csv
 from resultados import salvar_estatisticas_csv, grafico_vazao_execucoes, grafico_barras_throughput, grafico_tempo_execucoes
 
-
+# Gera um hash SHA1 fixo usado como X-Custom-ID para as requisições
 def gerar_hash():
         chave = '20239019558 Rayssa Alves'
         sha1_hash = hashlib.sha1(chave.encode()).hexdigest()
@@ -24,6 +24,7 @@ class Cliente():
         self.host = host
         self.porta = porta
     
+    # Monta e envia uma requisição HTTP via socket TCP, retorna (success, tempo, resposta)
     def enviar_requisicao(self, metodo='GET', caminho = '/', corpo=None):
         
         try:
@@ -32,6 +33,7 @@ class Cliente():
             client_socket.settimeout(5)
             client_socket.connect((self.host, self.porta))
             
+            # Monta a requisição HTTP
             cabecalhos = [f"Host: {self.host}", f"X-Custom-ID: {X_CUSTOM_ID}", "Connection: close"]
             corpo_texto = ""
             if corpo:

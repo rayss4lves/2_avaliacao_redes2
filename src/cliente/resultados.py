@@ -1,4 +1,4 @@
-import statistics
+import numpy as np
 import matplotlib.pyplot as plt
 import pandas as pd
 from pathlib import Path
@@ -7,7 +7,7 @@ import csv
 import os
 from datetime import datetime
 
-
+# Função para salvar resultados de cada execução em CSV
 def salvar_execucoes_csv(resultados, nome_servidor, arquivo='resultados/execucoes.csv'):
     
     os.makedirs(os.path.dirname(arquivo) if os.path.dirname(arquivo) else '.', exist_ok=True)
@@ -22,27 +22,24 @@ def salvar_execucoes_csv(resultados, nome_servidor, arquivo='resultados/execucoe
                 "cenario": cenario,
                 "execucao": i,
             }
-            # Adiciona todas as métricas do dicionario de execuçao
+            # Adiciona todas as métricas do dicionario de Resposta
             linha.update(execucao)
             linhas.append(linha)
     
     if not linhas:
-        print("Nenhuma execuçao para salvar")
+        print("Nenhuma Resposta para salvar")
         return
     
     # Determinar todas as colunas: timestamp, servidor, cenario, execucao + chaves das métricas
-    campos_base = ['timestamp', 'servidor', 'cenario', 'execucao']
-    campos_metrica = set()
-    for linha in linhas:
-        campos_metrica.update(k for k in linha.keys() if k not in campos_base)
-    campos = campos_base + sorted(campos_metrica)
+    campos = ['timestamp', 'servidor', 'cenario', 'execucao'] + \
+         sorted(set(linhas[0].keys()) - {'timestamp', 'servidor', 'cenario', 'execucao'})
     
     with open(arquivo, 'w', newline='', encoding='utf-8') as f:
         writer = csv.DictWriter(f, fieldnames=campos)
         writer.writeheader()
         writer.writerows(linhas)
     
-
+# Função para salvar estatísticas calculadas em CSV
 def salvar_estatisticas_csv(estatisticas, nome_servidor, arquivo='resultados/estatisticas.csv'):
    
     os.makedirs(os.path.dirname(arquivo) if os.path.dirname(arquivo) else '.', exist_ok=True)
@@ -72,7 +69,7 @@ def salvar_estatisticas_csv(estatisticas, nome_servidor, arquivo='resultados/est
         writer.writeheader()
         writer.writerows(linhas)
 
-
+# Calcula estatísticas (média e desvio padrão) para cada métrica
 def calcular_estatisticas(resultados):
     
     resultados_estatisticas = {}
@@ -88,13 +85,13 @@ def calcular_estatisticas(resultados):
             
             for execucao in execucoes:
                 valores.append(execucao[campo])
-            media = statistics.mean(valores)
-            desvio = statistics.stdev(valores)
+            media = np.mean(valores)
+            desvio = np.std(valores, ddof=1) if len(valores) > 1 else 0.0
             resultados_estatisticas[cenario][campo] = {'Media': media, 'Desvio Padrao': desvio}
         
     return resultados_estatisticas
 
-
+# Mostra resultados estatísticos formatados no terminal
 def mostrar_resultados(estatisticas):
     
     print('================================= RESULTADOS DAS ESTATÍSTICAS =================================')
@@ -106,6 +103,7 @@ def mostrar_resultados(estatisticas):
             desvio = valores['Desvio Padrao']
             print(f"  {metrica:.<40} Média: {media:>10.2f} | Desvio: {desvio:>10.2f}")
 
+# Gera gráfico de linha comparando vazão entre servidores
 def grafico_vazao_execucoes(arquivo_sincrono='resultados_sincrono.csv', arquivo_assincrono='resultados_assincrono.csv', output='../../graficos/vazao_execucoes.png'):
     
     # Diretório base e criaçao da pasta graficos
@@ -124,7 +122,7 @@ def grafico_vazao_execucoes(arquivo_sincrono='resultados_sincrono.csv', arquivo_
     plt.plot(range(1, len(vazao_sincrono) + 1), vazao_sincrono, marker='o', label='Servidor Sequencial')
     plt.plot(range(1, len(vazao_assincrono) + 1), vazao_assincrono, marker='s', label='Servidor Concorrente')
 
-    plt.xlabel('Número da Execuçao')
+    plt.xlabel('Número da Resposta')
     plt.ylabel('Vazao')
     plt.title('Comparaçao de Vazao: Sequencial vs Concorrente')
     plt.legend()
@@ -134,7 +132,7 @@ def grafico_vazao_execucoes(arquivo_sincrono='resultados_sincrono.csv', arquivo_
     plt.savefig(output, dpi=300, bbox_inches='tight')
     plt.close()
 
-    
+# Gera gráfico de linha comparando tempos de resposta   
 def grafico_tempo_execucoes(arquivo_sincrono='resultados_sincrono.csv', arquivo_assincrono='resultados_assincrono.csv', output='../../graficos/tempo_execucoes.png'):
     # Diretório base e criaçao da pasta graficos
     os.makedirs(os.path.dirname(output) if os.path.dirname(output) else '.', exist_ok=True)
@@ -144,17 +142,17 @@ def grafico_tempo_execucoes(arquivo_sincrono='resultados_sincrono.csv', arquivo_
     df_assincrono = pd.read_csv(arquivo_assincrono)
 
     # Obter lista da coluna de tempo
-    tempo_sincrono = df_sincrono['Tempo_Total'].tolist()
-    tempo_assincrono = df_assincrono['Tempo_Total'].tolist()
+    tempo_sincrono = df_sincrono['Tempo_Medio_Resposta'].tolist()
+    tempo_assincrono = df_assincrono['Tempo_Medio_Resposta'].tolist()
 
     # Criar figura
     plt.figure(figsize=(14, 8))
     plt.plot(range(1, len(tempo_sincrono) + 1), tempo_sincrono, marker='o', label='Servidor Sequencial')
     plt.plot(range(1, len(tempo_assincrono) + 1), tempo_assincrono, marker='s', label='Servidor Concorrente')
 
-    plt.xlabel('Número da Execuçao')
-    plt.ylabel('Tempo de Execuçao (s)')
-    plt.title(f'Comparaçao de Tempo de Execuçao: Sequencial vs Concorrente')
+    plt.xlabel('Número da Resposta')
+    plt.ylabel('Tempo de Resposta (s)')
+    plt.title(f'Comparaçao de Tempo médio de Resposta: Sequencial vs Concorrente')
     plt.legend()
     plt.grid(True)
 
@@ -163,7 +161,7 @@ def grafico_tempo_execucoes(arquivo_sincrono='resultados_sincrono.csv', arquivo_
     plt.close()
 
     
-    
+# Gera gráfico de barras comparando throughput médio   
 def grafico_barras_throughput(arquivo_sincrono='resultados_sincrono.csv', arquivo_assincrono='resultados_assincrono.csv', output='../../graficos/barras_throughput.png'):
 
     # Diretório base e criaçao da pasta graficos

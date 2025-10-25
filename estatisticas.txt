@@ -1,0 +1,14 @@
+cliente  | ======================ESTATISTICAS DO SERVIDOR SINCRONO======================
+cliente  | ================================= RESULTADOS DAS ESTATÍSTICAS =================================
+cliente  |   Tempo_Total............................. Média:       0.06 | Desvio:       0.01
+cliente  |   Tempo_Medio_Resposta.................... Média:       0.00 | Desvio:       0.00
+cliente  |   Throughput.............................. Média:     882.44 | Desvio:     198.15
+cliente  |   Requisicões Bem Sucedidas............... Média:      50.00 | Desvio:       0.00
+cliente  |   Falhas.................................. Média:       0.00 | Desvio:       0.00
+cliente  | ======================ESTATISTICAS DO SERVIDOR ASSINCRONO======================
+cliente  | ================================= RESULTADOS DAS ESTATÍSTICAS =================================
+cliente  |   Tempo_Total............................. Média:       1.20 | Desvio:       0.04
+cliente  |   Tempo_Medio_Resposta.................... Média:       0.01 | Desvio:       0.00
+cliente  |   Throughput.............................. Média:     415.83 | Desvio:      13.79
+cliente  |   Requisicões Bem Sucedidas............... Média:     500.00 | Desvio:       0.00
+cliente  |   Falhas.................................. Média:       0.00 | Desvio:       0.00

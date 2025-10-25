@@ -8,6 +8,7 @@ from http import HTTPStatus
 PORT = 8080
 HOST = '0.0.0.0'
 
+# Gera um hash SHA1 fixo usado como ID esperado pelos clientes
 def gerar_hash():
     chave = '20239019558 Rayssa Alves'
     sha1_hash = hashlib.sha1(chave.encode()).hexdigest()
@@ -22,24 +23,26 @@ class ServidorSequencial():
         self.servidor_socket = None
         self.contador_requisicoes = 0
     
+    # inicializa o servidor criando o socket, 
+    # faz bind/listen e aceita conexoes
     def iniciar_servidor(self):
         self.servidor_socket = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
         self.servidor_socket.setsockopt(socket.SOL_SOCKET, socket.SO_REUSEADDR, 1)
         
         try:
             self.servidor_socket.bind((HOST, PORT))
-            self.servidor_socket.listen(5)
+            self.servidor_socket.listen(1)
             # print(f'Servidor iniciado em {self.host}:{self.porta}')
             while True:
                 cliente, endereco = self.servidor_socket.accept()
                 # print(f'Conexão estabelecida com {endereco}')
-                self.tratar_cliente(cliente, endereco)
+                self.processar_requisicao_cliente(cliente, endereco)
         except Exception as e:
             print(f"Erro no servidor: {e}")
         finally:
             self.parar()
     
-    # Separa a primeira linha (ex: GET /status HTTP/1.1)
+    # Separa a primeira linha (ex: GET /status HTTP/1.1) e cabecalhos
     def dividir_requisicao(self, requisicao):
         cabecalhos = {}
         metodo_requisicao = None
@@ -59,11 +62,12 @@ class ServidorSequencial():
             
             
         except Exception as e:
-            print(f"Error parsing request: {e}")
+            print(f"Erro ao analisar a requisicao: {e}")
         
         return metodo_requisicao, caminho_requisicao, cabecalhos
-            
-    def tratar_cliente(self, cliente, endereco):
+    
+    # Trata cada conexao de cliente: lê requisicão, valida ID, monta e envia resposta 
+    def processar_requisicao_cliente(self, cliente, endereco):
         
         try:
             tempo_inicial = time.time()
@@ -74,7 +78,7 @@ class ServidorSequencial():
             id_cliente = cabecalhos.get('X-Custom-ID', '')
             
             if id_cliente != ID_ESPERADO:
-                resposta_erro = self.mensagem_erro(401, id_cliente)
+                resposta_erro = HTTPStatus(401).phrase
                 corpo = json.dumps(resposta_erro, indent=2)
                 resposta = self.montar_mensagem_http(401, corpo, id_cliente)
             else:
@@ -85,14 +89,21 @@ class ServidorSequencial():
             cliente.sendall(resposta.encode('utf-8'))
             
         except:
-            resposta_erro = self.mensagem_erro(500)
+            resposta_erro = resposta_erro = HTTPStatus(500).phrase
             corpo = json.dumps(resposta_erro, indent=2)
             resposta = self.montar_mensagem_http(500, corpo, id_cliente)
             cliente.sendall(resposta.encode('utf-8'))
-            
+        finally:
+            cliente.close()
+    
+    # Constroi o corpo JSON da resposta para requisicoes validas        
     def construir_resposta(self, metodo_requisicao, caminho_requisicao, id_cliente, tempo_inicial):
         status_code = 200
-        resposta = self.montar_resposta_base(metodo_requisicao, caminho_requisicao, id_cliente, tempo_inicial)
+        resposta = {
+            'Metodo': metodo_requisicao, 
+            'Caminho': caminho_requisicao,
+            'Duracao': f'{time.time() - tempo_inicial:.6f}s'
+        }
         conteudo = f'Bem vindo ao servidor Concorrente!'
         observacao = f'Metodo GET realizado na raiz'  
         
@@ -106,45 +117,25 @@ class ServidorSequencial():
         
         
         return resposta_http
-
-    def montar_resposta_base(self, metodo_requisicao, caminho_requisicao, id_cliente, tempo_inicial):
-        
-        resposta = {
-            'Servidor': 'Sequencial',
-            'Metodo': metodo_requisicao, 
-            'Caminho': caminho_requisicao,
-            'Data-Hora': datetime.datetime.now().strftime('%d/%m/%m/%Y %H:%M:%S'),
-            'X-Custom-ID': id_cliente,
-            'Duracao': round(time.time() - tempo_inicial, 4)
-        }
-
-        return resposta
-    
-    def mensagem_erro(self, status_code):
-        corpo_erro ={
-            'erro': status_code,
-            'mensagem': HTTPStatus(status_code).phrase,
-            'timestamp':datetime.datetime.now().isoformat()
-        }
-        return corpo_erro
-    
-        
+     
+    # Monta a resposta HTTP completa    
     def montar_mensagem_http(self, status_code, corpo, id_cliente):
         mensagem_requisicao = HTTPStatus(status_code).phrase
         resposta_http = (
             f'HTTP/1.1 {status_code} {mensagem_requisicao}\r\n'
             'Content-Type: application/json\r\n'
             f'Content-Length: {len(corpo)}\r\n'
-            'Server: Servidor Sequencial/2.0\r\n'
-            f'ID-Recebido: {id_cliente}\r\n'
+            'Server: Servidor Sequencial\r\n'
+            f'X-Custom-ID: {id_cliente}\r\n'
             'Connection: close\r\n\r\n'
+            f'timestamp:{datetime.datetime.now().isoformat()}\r\n'
             f'{corpo}'
         )
         
         return resposta_http
     
+    # Fecha o socket do servidor
     def parar(self):
-        #Para o servidor
         if self.servidor_socket:
             self.servidor_socket.close()
             # print("Servidor sequencial parado")
