@@ -6,7 +6,7 @@ import json
 from http import HTTPStatus
 import threading
 
-PORT = 8080
+PORT = 80
 HOST = '0.0.0.0'
 MAX_CONEXOES = 5
 #novo cenario de testes
@@ -62,7 +62,7 @@ class ServidorConcorrente():
                 self.conexoes_ativas-=1
             # print(f'conexao {id_conexao} finalizada | Ativas :{self.conexoes_ativas}')
     
-    # Separa a primeira linha (ex: GET /status HTTP/1.1)
+    # Separa a primeira linha (GET / HTTP/1.1)
     def dividir_requisicao(self, requisicao):
         cabecalhos = {}
         metodo_requisicao = None
@@ -128,7 +128,7 @@ class ServidorConcorrente():
             
         }
         conteudo = f'Bem vindo ao servidor Concorrente!'
-        observacao = f'Metodo GET realizado na raiz'
+        observacao = f'Metodo GET realizado'
             
         
         resposta.update({

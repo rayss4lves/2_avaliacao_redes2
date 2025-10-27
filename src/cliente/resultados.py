@@ -1,7 +1,6 @@
 import numpy as np
 import matplotlib.pyplot as plt
 import pandas as pd
-from pathlib import Path
  
 import csv
 import os
@@ -26,20 +25,16 @@ def salvar_execucoes_csv(resultados, nome_servidor, arquivo='resultados/execucoe
             linha.update(execucao)
             linhas.append(linha)
     
-    if not linhas:
-        print("Nenhuma Resposta para salvar")
-        return
+    if linhas:
+        # Determinar todas as colunas
+        campos = ['timestamp', 'servidor', 'cenario', 'execucao', 'Falhas', 'Tempo_Total', 'Throughput', 'Requisicões Bem Sucedidas', 'Tempo_Medio_Resposta'] 
+
+        with open(arquivo, 'w', newline='', encoding='utf-8') as f:
+            writer = csv.DictWriter(f, fieldnames=campos)
+            writer.writeheader()
+            writer.writerows(linhas)
     
-    # Determinar todas as colunas: timestamp, servidor, cenario, execucao + chaves das métricas
-    campos = ['timestamp', 'servidor', 'cenario', 'execucao'] + \
-         sorted(set(linhas[0].keys()) - {'timestamp', 'servidor', 'cenario', 'execucao'})
-    
-    with open(arquivo, 'w', newline='', encoding='utf-8') as f:
-        writer = csv.DictWriter(f, fieldnames=campos)
-        writer.writeheader()
-        writer.writerows(linhas)
-    
-# Função para salvar estatísticas calculadas em CSV
+# Função para salvar estatisticas calculadas em CSV
 def salvar_estatisticas_csv(estatisticas, nome_servidor, arquivo='resultados/estatisticas.csv'):
    
     os.makedirs(os.path.dirname(arquivo) if os.path.dirname(arquivo) else '.', exist_ok=True)
@@ -59,25 +54,23 @@ def salvar_estatisticas_csv(estatisticas, nome_servidor, arquivo='resultados/est
             }
             linhas.append(linha)
 
-    if not linhas:
-        print("Nenhuma estatística para salvar")
-        return
+    if linhas:
+        campos = ['timestamp', 'servidor', 'cenario', 'metrica', 'media', 'desvio_padrao']
+        with open(arquivo, 'w', newline='', encoding='utf-8') as f:
+            writer = csv.DictWriter(f, fieldnames=campos)
+            writer.writeheader()
+            writer.writerows(linhas)
 
-    campos = ['timestamp', 'servidor', 'cenario', 'metrica', 'media', 'desvio_padrao']
-    with open(arquivo, 'w', newline='', encoding='utf-8') as f:
-        writer = csv.DictWriter(f, fieldnames=campos)
-        writer.writeheader()
-        writer.writerows(linhas)
+    
 
-# Calcula estatísticas (média e desvio padrão) para cada métrica
+# Calcula estatisticas (média e desvio padrão) para cada métrica
 def calcular_estatisticas(resultados):
     
     resultados_estatisticas = {}
     
     for cenario, execucoes in resultados.items():
         resultados_estatisticas[cenario] = {}
-        # execucoes == {'Tempo Total': , 'Tempo Medio': , 'Throughput': , 
-        #  'Requisicões Bem Sucedidas': , 'Falhas': }
+        
         campos = execucoes[0].keys()
         
         for campo in campos:
@@ -91,13 +84,12 @@ def calcular_estatisticas(resultados):
         
     return resultados_estatisticas
 
-# Mostra resultados estatísticos formatados no terminal
+# Mostra resultados estatisticos formatados no terminal
 def mostrar_resultados(estatisticas):
     
-    print('================================= RESULTADOS DAS ESTATÍSTICAS =================================')
+    print('================================= RESULTADOS DAS ESTATiSTICAS =================================')
     
     for cenario, metricas in estatisticas.items():
-        
         for metrica, valores in metricas.items():
             media = valores['Media']
             desvio = valores['Desvio Padrao']
@@ -164,7 +156,7 @@ def grafico_tempo_execucoes(arquivo_sincrono='resultados_sincrono.csv', arquivo_
 # Gera gráfico de barras comparando throughput médio   
 def grafico_barras_throughput(arquivo_sincrono='resultados_sincrono.csv', arquivo_assincrono='resultados_assincrono.csv', output='../../graficos/barras_throughput.png'):
 
-    # Diretório base e criaçao da pasta graficos
+    # Diretório base e criação da pasta graficos
     os.makedirs(os.path.dirname(output) if os.path.dirname(output) else '.', exist_ok=True)
 
     # Carregar dados
@@ -174,23 +166,32 @@ def grafico_barras_throughput(arquivo_sincrono='resultados_sincrono.csv', arquiv
     # Filtrar apenas a métrica Throughput
     tp_sincrono = df_sincrono.loc[df_sincrono['metrica'] == 'Throughput', 'media'].values[0]
     tp_assincrono = df_assincrono.loc[df_assincrono['metrica'] == 'Throughput', 'media'].values[0]
+    
+    # Obter desvio padrão
+    std_sincrono = df_sincrono.loc[df_sincrono['metrica'] == 'Throughput', 'desvio_padrao'].values[0]
+    std_assincrono = df_assincrono.loc[df_assincrono['metrica'] == 'Throughput', 'desvio_padrao'].values[0]
 
-    # Criar grafico de barras
+    # Criar gráfico de barras
     servidores = ['Sequencial', 'Concorrente']
     valores = [tp_sincrono, tp_assincrono]
+    desvios = [std_sincrono, std_assincrono]
 
     plt.figure(figsize=(8, 6))
     barras = plt.bar(servidores, valores, color=['skyblue', 'salmon'])
     
+    # Adicionar barras de erro (riscos)
+    plt.errorbar(servidores, valores, yerr=desvios, fmt='none', ecolor='black', 
+                 capsize=8, capthick=2, elinewidth=2)
+    
     plt.ylabel('Throughput')
-    plt.title('Comparaçao de Média de Throughput')
+    plt.title('Comparação de Média de Throughput')
     plt.grid(axis='y', linestyle='--', alpha=0.7)
 
     # Adicionar valores no topo das barras
-    for barra in barras:
+    for i, barra in enumerate(barras):
         altura = barra.get_height()
-        plt.text(barra.get_x() + barra.get_width()/2, altura + altura*0.01, f"{altura:.2f}", 
-                 ha='center', va='bottom')
+        plt.text(barra.get_x() + barra.get_width()/2, altura + desvios[i] + altura*0.01, 
+                 f"{altura:.2f}", ha='center', va='bottom')
 
     plt.tight_layout()
     plt.savefig(output, dpi=300, bbox_inches='tight')

@@ -5,7 +5,7 @@ import datetime
 import json
 from http import HTTPStatus
 
-PORT = 8080
+PORT = 80
 HOST = '0.0.0.0'
 
 # Gera um hash SHA1 fixo usado como ID esperado pelos clientes
@@ -42,7 +42,7 @@ class ServidorSequencial():
         finally:
             self.parar()
     
-    # Separa a primeira linha (ex: GET /status HTTP/1.1) e cabecalhos
+    # Separa a primeira linha (ex: GET / HTTP/1.1) e cabecalhos
     def dividir_requisicao(self, requisicao):
         cabecalhos = {}
         metodo_requisicao = None
@@ -105,7 +105,7 @@ class ServidorSequencial():
             'Duracao': f'{time.time() - tempo_inicial:.6f}s'
         }
         conteudo = f'Bem vindo ao servidor Concorrente!'
-        observacao = f'Metodo GET realizado na raiz'  
+        observacao = f'Metodo GET realizado'  
         
         resposta.update({
             'Mensagem': observacao,

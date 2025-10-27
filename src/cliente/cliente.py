@@ -65,10 +65,10 @@ class Cliente():
 if __name__ == "__main__":
     # Aguarda os servidores ficarem disponiveis
     servidor_host_sincrono = 'servidor-sincrono'
-    servidor_porta_sincrono = 8080
+    servidor_porta_sincrono = 80
     
     servidor_host_assincrono = 'servidor-assincrono' 
-    servidor_porta_assincrono = 8080
+    servidor_porta_assincrono = 80
     
     resultados_sincrono = {}
     resultados_assincrono = {}
