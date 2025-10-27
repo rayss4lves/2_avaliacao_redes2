@@ -24,7 +24,8 @@ class Cliente():
         self.host = host
         self.porta = porta
     
-    # Monta e envia uma requisicao HTTP via socket TCP, retorna (success, tempo, resposta)
+    # Esta funcao monta e envia uma requisicao HTTP via socket TCP e retorna (success, tempo, resposta)
+    # Ela usa o X-Custom-ID no cabecalho da requisicao
     def enviar_requisicao(self, metodo='GET', caminho = '/', corpo=None):
         
         try:

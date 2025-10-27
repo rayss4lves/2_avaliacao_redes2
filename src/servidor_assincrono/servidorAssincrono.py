@@ -28,7 +28,7 @@ class ServidorConcorrente():
         self.lock = threading.Lock()
         self.conexoes_ativas = 0
     
-    # Inicializa o servidor criando o socket do servidor, faz bind/listen e aceita conexoes.
+    # Esta funcao inicializa o servidor criando o socket do servidor, faz bind/listen e aceita conexoes.
     # Para cada conexao cria uma thread para gerenciar o cliente.
     def iniciar_servidor(self):
         self.servidor_socket = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
@@ -48,7 +48,7 @@ class ServidorConcorrente():
         finally:
             self.parar()
       
-    # Faz o controle de contador de conexoes ativas utilizando lock.      
+    # Esta funcao faz o controle de contador de conexoes ativas utilizando lock     
     def controlar_cliente_thread(self, cliente, endereco):
         with self.lock:
             self.conexoes_ativas += 1
@@ -60,7 +60,7 @@ class ServidorConcorrente():
                 self.conexoes_ativas-=1
             # print(f'conexao {id_conexao} finalizada | Ativas :{self.conexoes_ativas}')
     
-    # Separa a primeira linha (GET / HTTP/1.1)
+    # Separa a primeira linha (GET / HTTP/1.1) e os cabecalhos da requisicao
     def dividir_requisicao(self, requisicao):
         cabecalhos = {}
         metodo_requisicao = None
@@ -84,7 +84,7 @@ class ServidorConcorrente():
         
         return metodo_requisicao, caminho_requisicao, cabecalhos
      
-    # Trata cada conexao de cliente: le requisicao, valida ID, monta e envia resposta       
+    # Esta funcao processa a requisicao, valida o ID do cliente, monta e envia resposta HTTP       
     def processar_requisicao_cliente(self, cliente, endereco, id_conexao):
         
         try:

@@ -42,7 +42,7 @@ class ServidorSequencial():
         finally:
             self.parar()
     
-    # Separa a primeira linha (ex: GET / HTTP/1.1) e cabecalhos
+    # Separa a primeira linha (GET / HTTP/1.1) e os cabecalhos da requisicao
     def dividir_requisicao(self, requisicao):
         cabecalhos = {}
         metodo_requisicao = None
@@ -66,7 +66,7 @@ class ServidorSequencial():
         
         return metodo_requisicao, caminho_requisicao, cabecalhos
     
-    # Trata cada conexao de cliente: le requisicao, valida ID, monta e envia resposta 
+    # Esta funcao processa a requisicao, valida o ID do cliente, monta e envia resposta HTTP 
     def processar_requisicao_cliente(self, cliente, endereco):
         
         try:
