@@ -9,7 +9,7 @@ from datetime import datetime
 
 # Esta funcao salva os resultados de cada exeecucao em um CSV, na pasta de resultados
 def salvar_execucoes_csv(resultados, nome_servidor, arquivo='resultados/execucoes.csv'):
-    
+    #Diretorio base e criacao da pasta resultados para salvar o arquivo CSV
     os.makedirs(os.path.dirname(arquivo) if os.path.dirname(arquivo) else '.', exist_ok=True)
     timestamp = datetime.now().strftime('%Y-%m-%d %H:%M:%S')
     
@@ -38,6 +38,7 @@ def salvar_execucoes_csv(resultados, nome_servidor, arquivo='resultados/execucoe
 # Esta funcao salva as estatisticas calculadas no CSV, na pasta resultados
 def salvar_estatisticas_csv(estatisticas, nome_servidor, arquivo='resultados/estatisticas.csv'):
    
+    #Diretorio base e criacao da pasta resultados para salvar o arquivo CSV
     os.makedirs(os.path.dirname(arquivo) if os.path.dirname(arquivo) else '.', exist_ok=True)
 
     linhas = []

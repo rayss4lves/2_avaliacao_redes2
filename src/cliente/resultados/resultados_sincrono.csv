@@ -1,6 +1,6 @@
 timestamp,servidor,cenario,metrica,media,desvio_padrao
-2025-10-27 14:43:21,sincrono,GET - /,Tempo_Total,0.05872160196304321,0.017989699331848755
-2025-10-27 14:43:21,sincrono,GET - /,Tempo_Medio_Resposta,0.001064753532409668,0.0003063445604739812
-2025-10-27 14:43:21,sincrono,GET - /,Throughput,956.6520825533211,392.99342253830736
-2025-10-27 14:43:21,sincrono,GET - /,Requisicões Bem Sucedidas,50.0,0.0
-2025-10-27 14:43:21,sincrono,GET - /,Falhas,0.0,0.0
+2025-10-27 17:06:20,sincrono,GET - /,Tempo_Total,0.051500678062438965,0.01642780095746328
+2025-10-27 17:06:20,sincrono,GET - /,Tempo_Medio_Resposta,0.0009452741146087646,0.000297367028517805
+2025-10-27 17:06:20,sincrono,GET - /,Throughput,1096.7202566665724,451.85251507045666
+2025-10-27 17:06:20,sincrono,GET - /,Requisicões Bem Sucedidas,50.0,0.0
+2025-10-27 17:06:20,sincrono,GET - /,Falhas,0.0,0.0

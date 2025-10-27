@@ -62,7 +62,6 @@ def teste_concorrente(metodo, caminho, num_requisicoes, num_threads, cliente = N
         thread.join()
         
     tempo_total = time.time()-tempo_inicial
-    total_requisicoes = num_requisicoes * num_threads
     sucesso = len(tempos)
     tempo_medio_resposta = sum(tempos)/sucesso if sucesso else 0
     throughput = sucesso/tempo_total if tempo_total > 0 else 0

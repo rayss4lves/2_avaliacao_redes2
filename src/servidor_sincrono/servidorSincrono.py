@@ -104,7 +104,7 @@ class ServidorSequencial():
             'Caminho': caminho_requisicao,
             'Duracao': f'{time.time() - tempo_inicial:.6f}s'
         }
-        conteudo = f'Bem vindo ao servidor Concorrente!'
+        conteudo = f'Bem vindo ao servidor Sequencial!'
         observacao = f'Metodo GET realizado'  
         
         resposta.update({
