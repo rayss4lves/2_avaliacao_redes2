@@ -20,7 +20,7 @@ def teste_sequencial(metodo, caminho, num_requisicoes, cliente = None):
     sucesso = len(tempos)
     throughput = sucesso/tempo_total if tempo_total > 0 else 0
     
-    # Retorna resultados em formato de dicionário
+    # Retorna resultados em formato de dicionario
     return {'Tempo_Total': tempo_total,
             'Tempo_Medio_Resposta':tempo_medio_resposta,
             'Throughput': throughput,
@@ -28,7 +28,7 @@ def teste_sequencial(metodo, caminho, num_requisicoes, cliente = None):
             'Falhas': len(falhas)
             }
   
-# Essa função executa cada thread no teste concorrente
+# Essa funcao executa cada thread no teste concorrente
 # Realiza um conjunto de requisições para cada thread 
 def executar_cliente_concorrente(num_requisicoes, cliente = None, id_thread=0, metodo='GET', caminho='/', tempos=[], lock=None, falhas=[]):
     
@@ -42,7 +42,7 @@ def executar_cliente_concorrente(num_requisicoes, cliente = None, id_thread=0, m
                 falhas.append(resposta)
                 print(f'\tThread[{id_thread}]  Req - {i+1}\t Falha na requisicao: {resposta}')
     
-# Função que realiza testes concorrentes usando múltiplas threads 
+# Funcao que realiza testes concorrentes usando multiplas threads 
 def teste_concorrente(metodo, caminho, num_requisicoes, num_threads, cliente = None, ):
     
     tempos = []
@@ -51,7 +51,7 @@ def teste_concorrente(metodo, caminho, num_requisicoes, num_threads, cliente = N
     lock = threading.Lock()
     threads = []
     
-    # Cria e inicia múltiplas threads para enviar requisições simultâneas, sem bloqueio ou espera
+    # Cria e inicia multiplas threads para enviar requisicoes simultaneas, sem bloqueio ou espera
     for i in range(num_threads):
         thread = threading.Thread(target=executar_cliente_concorrente, args=(num_requisicoes, cliente, i+1, metodo, caminho, tempos, lock, falhas))
         threads.append(thread)
@@ -67,7 +67,7 @@ def teste_concorrente(metodo, caminho, num_requisicoes, num_threads, cliente = N
     tempo_medio_resposta = sum(tempos)/sucesso if sucesso else 0
     throughput = sucesso/tempo_total if tempo_total > 0 else 0
     
-    # Retorna resultados em formato de dicionário
+    # Retorna resultados em formato de dicionario
     return {'Tempo_Total': tempo_total,
             'Tempo_Medio_Resposta':tempo_medio_resposta,
             'Throughput': throughput,

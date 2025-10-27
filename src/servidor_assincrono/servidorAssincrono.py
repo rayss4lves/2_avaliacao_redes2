@@ -9,8 +9,6 @@ import threading
 PORT = 80
 HOST = '0.0.0.0'
 MAX_CONEXOES = 5
-#novo cenario de testes
-#modificar o max conexoes e colocar os valores numa tabela
 
 # Gera um hash SHA1 fixo usado como ID esperado pelos clientes
 def gerar_hash():
@@ -30,8 +28,8 @@ class ServidorConcorrente():
         self.lock = threading.Lock()
         self.conexoes_ativas = 0
     
-    # Inicializa o servidor criando o socket do servidor, faz bind/listen e aceita conexões.
-    # Para cada conexão cria uma thread para gerenciar o cliente.
+    # Inicializa o servidor criando o socket do servidor, faz bind/listen e aceita conexoes.
+    # Para cada conexao cria uma thread para gerenciar o cliente.
     def iniciar_servidor(self):
         self.servidor_socket = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
         self.servidor_socket.setsockopt(socket.SOL_SOCKET, socket.SO_REUSEADDR, 1)
@@ -50,7 +48,7 @@ class ServidorConcorrente():
         finally:
             self.parar()
       
-    # Faz o controle de contador de conexões ativas utilizando lock.      
+    # Faz o controle de contador de conexoes ativas utilizando lock.      
     def controlar_cliente_thread(self, cliente, endereco):
         with self.lock:
             self.conexoes_ativas += 1
@@ -86,7 +84,7 @@ class ServidorConcorrente():
         
         return metodo_requisicao, caminho_requisicao, cabecalhos
      
-    # Trata cada conexao de cliente: lê requisicão, valida ID, monta e envia resposta       
+    # Trata cada conexao de cliente: le requisicao, valida ID, monta e envia resposta       
     def processar_requisicao_cliente(self, cliente, endereco, id_conexao):
         
         try:

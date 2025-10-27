@@ -35,7 +35,7 @@ class ServidorSequencial():
             # print(f'Servidor iniciado em {self.host}:{self.porta}')
             while True:
                 cliente, endereco = self.servidor_socket.accept()
-                # print(f'Conexão estabelecida com {endereco}')
+                # print(f'Conexao estabelecida com {endereco}')
                 self.processar_requisicao_cliente(cliente, endereco)
         except Exception as e:
             print(f"Erro no servidor: {e}")
@@ -66,7 +66,7 @@ class ServidorSequencial():
         
         return metodo_requisicao, caminho_requisicao, cabecalhos
     
-    # Trata cada conexao de cliente: lê requisicão, valida ID, monta e envia resposta 
+    # Trata cada conexao de cliente: le requisicao, valida ID, monta e envia resposta 
     def processar_requisicao_cliente(self, cliente, endereco):
         
         try:

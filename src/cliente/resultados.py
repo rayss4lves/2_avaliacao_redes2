@@ -6,7 +6,7 @@ import csv
 import os
 from datetime import datetime
 
-# Função para salvar resultados de cada execução em CSV
+# Funcao para salvar resultados de cada execucao em CSV
 def salvar_execucoes_csv(resultados, nome_servidor, arquivo='resultados/execucoes.csv'):
     
     os.makedirs(os.path.dirname(arquivo) if os.path.dirname(arquivo) else '.', exist_ok=True)
@@ -21,7 +21,7 @@ def salvar_execucoes_csv(resultados, nome_servidor, arquivo='resultados/execucoe
                 "cenario": cenario,
                 "execucao": i,
             }
-            # Adiciona todas as métricas do dicionario de Resposta
+            # Adiciona todas as metricas do dicionario de Resposta
             linha.update(execucao)
             linhas.append(linha)
     
@@ -34,7 +34,7 @@ def salvar_execucoes_csv(resultados, nome_servidor, arquivo='resultados/execucoe
             writer.writeheader()
             writer.writerows(linhas)
     
-# Função para salvar estatisticas calculadas em CSV
+# Funcao para salvar estatisticas calculadas em CSV
 def salvar_estatisticas_csv(estatisticas, nome_servidor, arquivo='resultados/estatisticas.csv'):
    
     os.makedirs(os.path.dirname(arquivo) if os.path.dirname(arquivo) else '.', exist_ok=True)
@@ -63,7 +63,7 @@ def salvar_estatisticas_csv(estatisticas, nome_servidor, arquivo='resultados/est
 
     
 
-# Calcula estatisticas (média e desvio padrão) para cada métrica
+# Calcula estatisticas (media e desvio padrao) para cada metrica
 def calcular_estatisticas(resultados):
     
     resultados_estatisticas = {}
@@ -95,10 +95,10 @@ def mostrar_resultados(estatisticas):
             desvio = valores['Desvio Padrao']
             print(f"  {metrica:.<40} Média: {media:>10.2f} | Desvio: {desvio:>10.2f}")
 
-# Gera gráfico de linha comparando vazão entre servidores
+# Gera grafico de linha comparando vazao entre servidores
 def grafico_vazao_execucoes(arquivo_sincrono='resultados_sincrono.csv', arquivo_assincrono='resultados_assincrono.csv', output='../../graficos/vazao_execucoes.png'):
     
-    # Diretório base e criaçao da pasta graficos
+    # Diretório base e criacao da pasta graficos
     os.makedirs(os.path.dirname(output) if os.path.dirname(output) else '.', exist_ok=True)
 
     # Carregar dados
@@ -124,7 +124,7 @@ def grafico_vazao_execucoes(arquivo_sincrono='resultados_sincrono.csv', arquivo_
     plt.savefig(output, dpi=300, bbox_inches='tight')
     plt.close()
 
-# Gera gráfico de linha comparando tempos de resposta   
+# Gera grafico de linha comparando tempos de resposta   
 def grafico_tempo_execucoes(arquivo_sincrono='resultados_sincrono.csv', arquivo_assincrono='resultados_assincrono.csv', output='../../graficos/tempo_execucoes.png'):
     # Diretório base e criaçao da pasta graficos
     os.makedirs(os.path.dirname(output) if os.path.dirname(output) else '.', exist_ok=True)
@@ -153,21 +153,21 @@ def grafico_tempo_execucoes(arquivo_sincrono='resultados_sincrono.csv', arquivo_
     plt.close()
 
     
-# Gera gráfico de barras comparando throughput médio   
+# Gera grafico de barras comparando throughput medio   
 def grafico_barras_throughput(arquivo_sincrono='resultados_sincrono.csv', arquivo_assincrono='resultados_assincrono.csv', output='../../graficos/barras_throughput.png'):
 
-    # Diretório base e criação da pasta graficos
+    # Diretorio base e criacao da pasta graficos
     os.makedirs(os.path.dirname(output) if os.path.dirname(output) else '.', exist_ok=True)
 
     # Carregar dados
     df_sincrono = pd.read_csv(arquivo_sincrono)
     df_assincrono = pd.read_csv(arquivo_assincrono)
 
-    # Filtrar apenas a métrica Throughput
+    # Filtrar apenas a metrica Throughput
     tp_sincrono = df_sincrono.loc[df_sincrono['metrica'] == 'Throughput', 'media'].values[0]
     tp_assincrono = df_assincrono.loc[df_assincrono['metrica'] == 'Throughput', 'media'].values[0]
     
-    # Obter desvio padrão
+    # Obter desvio padrao
     std_sincrono = df_sincrono.loc[df_sincrono['metrica'] == 'Throughput', 'desvio_padrao'].values[0]
     std_assincrono = df_assincrono.loc[df_assincrono['metrica'] == 'Throughput', 'desvio_padrao'].values[0]
 
