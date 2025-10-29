@@ -71,7 +71,7 @@ Contém os gráficos gerados automaticamente após a execução dos testes, apre
     - Cliente: `95.58.0.4`
 - **Cabeçalho obrigatório** [Matricula + Nome]:
   ```
-    - `X-Custom-ID: [HASH_MD5(20239019558 + Rayssa Alves)]`
+    - `X-Custom-ID: [HASH_SHA1(20239019558 + Rayssa Alves)]`
   ```
 - **Porta**: Os dois servidores escutam na porta **80**
 
@@ -102,14 +102,19 @@ Utiliza threads para processar múltiplas requisições simultaneamente na porta
 
 ### Primitivas HTTP Implementadas
 - **GET**: Recuperação de recursos do servidor
+    - Optei por implementar apenas a primitiva GET, porque no contexto deste projeto, as demais ptimitivas HTTP não apresentariam diferenças sigificativas na lógica do tratamento. A escolha visou simplificr a estrutura sem comprometer a análise de desempenho entre os servidores.
 
 ## 📈 Métricas Avaliadas
 
-- **Throughput**: Taxa de transferência (bytes/s)
-- **Tempo de Resposta**: Latência média
-
+- **Throughput**
+- **Tempo de Resposta**
+- **Tempo Total**
+- **Taxa de sucesso**
+  
 ### Metodologia Estatística
-- Mínimo de **10 execuções** por teste dos servidores
+- **20 execuções** por teste dos servidores
+- **10** Threads para o servidor Assíncrono (Concorrente)
+- **50** Requisições em cada execução dos testes
 - Cálculo de **média e desvio padrão** para cada métrica
 - Análise comparativa entre servidores sequencial e concorrente
 
