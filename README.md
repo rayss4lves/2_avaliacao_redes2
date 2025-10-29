@@ -1,4 +1,4 @@
-# Avaliação de Redes de Computadores II - 2025-2
+# Segunda Avaliação de Redes de Computadores II - 2025-2
 
 **UFPI - CSHNB | Sistemas de Informação | Trabalho Individual**
 
@@ -119,6 +119,6 @@ Utiliza threads para processar múltiplas requisições simultaneamente na porta
 - Análise comparativa entre servidores sequencial e concorrente
 
 
-**Professor**: Rayner Gomes (raynergomes@gmail.com)
+**Professor**: Rayner Gomes 
 
 ---
