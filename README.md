@@ -102,7 +102,7 @@ Utiliza threads para processar múltiplas requisições simultaneamente na porta
 
 ### Primitivas HTTP Implementadas
 - **GET**: Recuperação de recursos do servidor
-    - Optei por implementar apenas a primitiva GET, porque no contexto deste projeto, as demais ptimitivas HTTP não apresentariam diferenças sigificativas na lógica do tratamento. A escolha visou simplificr a estrutura sem comprometer a análise de desempenho entre os servidores.
+    - Optei por implementar apenas a primitiva GET, porque no contexto deste projeto, as demais primitivas HTTP não apresentariam diferenças sigificativas na lógica do tratamento. A escolha visou simplificr a estrutura sem comprometer a análise de desempenho entre os servidores.
 
 ## 📈 Métricas Avaliadas
 
