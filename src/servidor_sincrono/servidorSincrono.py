@@ -129,7 +129,7 @@ class ServidorSequencial():
             f'X-Custom-ID: {id_cliente}\r\n'
             'Connection: close\r\n\r\n'
             f'timestamp:{datetime.datetime.now().isoformat()}\r\n'
-            f'{corpo}'
+            f'Corpo: {corpo}'
         )
         
         return resposta_http

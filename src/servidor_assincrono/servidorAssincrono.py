@@ -60,7 +60,7 @@ class ServidorConcorrente():
                 self.conexoes_ativas-=1
             # print(f'conexao {id_conexao} finalizada | Ativas :{self.conexoes_ativas}')
     
-    # Separa a primeira linha (GET / HTTP/1.1) e os cabecalhos da requisicao
+    # Esta funcao separa a primeira linha (GET / HTTP/1.1) e os cabecalhos da requisicao
     def dividir_requisicao(self, requisicao):
         cabecalhos = {}
         metodo_requisicao = None
@@ -153,7 +153,7 @@ class ServidorConcorrente():
             f'ID-Conexao: {id_conexao}\r\n'
             'Connection: close\r\n\r\n'
             f'Data-Hora: {datetime.datetime.now().isoformat()}\r\n'
-            f'{corpo}'
+            f'Corpo: {corpo}'
             )
 
         return resposta_http
