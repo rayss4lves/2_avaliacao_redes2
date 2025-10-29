@@ -5,7 +5,7 @@
 - **Autor**: Rayssa dos Santos Alves
 - **Matrícula**: 20239019558
 - **Entrega**: 29/10/2025
-- [Link para o vídeo do YouTube] (https://youtu.be/BOhxza3uXfM?si=KPgu8P8ZaCOK4N_W)
+- [Link para o vídeo do YouTube](https://youtu.be/BOhxza3uXfM?si=BnFIk177l5nz-AFZ))
 
 ## 🎯 Projeto
 Este projeto implementa uma simulação de sistemas cliente-servidor para uma comparação de desempenho entre os servidores sequencial e concorrente, usando sockets TCP/IP com protocolo HTTP. O objetivo é avaliar métricas como throughput, tempo de resposta.
